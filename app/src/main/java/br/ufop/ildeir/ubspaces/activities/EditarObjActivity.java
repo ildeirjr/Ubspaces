@@ -1,0 +1,259 @@
+package br.ufop.ildeir.ubspaces.activities;
+
+import android.app.FragmentTransaction;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.support.design.widget.TextInputLayout;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Base64;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+
+import com.google.zxing.integration.android.IntentIntegrator;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import br.ufop.ildeir.ubspaces.miscellaneous.DateDialog;
+import br.ufop.ildeir.ubspaces.R;
+import br.ufop.ildeir.ubspaces.objects.Item;
+import br.ufop.ildeir.ubspaces.requests.EditObjDataRequest;
+import br.ufop.ildeir.ubspaces.requests.PostObjImgRequest;
+import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
+
+
+public class EditarObjActivity extends AppCompatActivity {
+
+
+    private TextInputLayout etCodigo;
+    private TextInputLayout etNome;
+    private TextInputLayout etDescricao;
+    private TextInputLayout etLocal;
+    private TextInputLayout etDepto;
+    private TextInputLayout etData;
+    private TextInputLayout etRecebedor;
+    private TextInputLayout etNota;
+    private ImageView fotoView;
+    private int dia,mes,ano;
+    private DateDialog dateDialog;
+    private static int IMG_REQUEST = 1;
+    Bitmap img;
+    byte[] b;
+    private boolean flagDateDialogOpened = false;
+    private String codigoAntigo, fotoAntigo;
+    private Item itemSingleton;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_editar_obj);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setTitle("Editar objeto");
+
+        etCodigo = findViewById(R.id.layoutCod);
+        etNome = findViewById(R.id.layoutNome);
+        etDescricao = findViewById(R.id.layoutDescricao);
+        etLocal = findViewById(R.id.layoutLocal);
+        etDepto = findViewById(R.id.layoutDepto);
+        etData = findViewById(R.id.layoutData);
+        etRecebedor = findViewById(R.id.layoutRecebedor);
+        etNota = findViewById(R.id.layoutNota);
+        fotoView = findViewById(R.id.addImg);
+
+        etData.getEditText().setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if(b){
+                    dateDialog = new DateDialog(view);
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                    dateDialog.show(ft,"DatePicker");
+                    flagDateDialogOpened = true;
+                }
+            }
+        });
+
+//        Intent it = getIntent();
+//        Bundle bundle = it.getExtras();
+//        if(bundle != null){
+//            etCodigo.getEditText().setText(bundle.getString("cod"));
+//            etNome.getEditText().setText(bundle.getString("nome"));
+//            etDescricao.getEditText().setText(bundle.getString("descricao"));
+//            etLocal.getEditText().setText(bundle.getString("local"));
+//            etDepto.getEditText().setText(bundle.getString("depto"));
+//            etData.getEditText().setText(bundle.getString("data"));
+//            etRecebedor.getEditText().setText(bundle.getString("recebedor"));
+//            etNota.getEditText().setText(bundle.getString("nota"));
+//            img = BitmapFactory.decodeByteArray(bundle.getByteArray("img"),0,bundle.getByteArray("img").length);
+//            fotoView.setImageBitmap(img);
+//            dia = Integer.parseInt(splitDate(bundle.getString("data"))[0]);
+//            mes = Integer.parseInt(splitDate(bundle.getString("data"))[1]);
+//            ano = Integer.parseInt(splitDate(bundle.getString("data"))[2]);
+//            codigoAntigo = bundle.getString("cod");
+//        }
+
+        itemSingleton = ItemSingleton.getInstance().getItemSingleton();
+        if(itemSingleton != null){
+            dia = itemSingleton.getDia();
+            mes = itemSingleton.getMes();
+            ano = itemSingleton.getAno();
+            etCodigo.getEditText().setText(itemSingleton.getCodigo());
+            etNome.getEditText().setText(itemSingleton.getNome());
+            etDescricao.getEditText().setText(itemSingleton.getDescricao());
+            etLocal.getEditText().setText(itemSingleton.getLocal());
+            etDepto.getEditText().setText(itemSingleton.getDepto());
+            etData.getEditText().setText(dia + "/" + mes + "/" + ano);
+            etRecebedor.getEditText().setText(itemSingleton.getRecebeu());
+            etNota.getEditText().setText(itemSingleton.getNota());
+            img = BitmapFactory.decodeByteArray(itemSingleton.getImg(),0,itemSingleton.getImg().length);
+            fotoView.setImageBitmap(img);
+            codigoAntigo = itemSingleton.getCodigo();
+            fotoAntigo = itemSingleton.getFoto();
+        }
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_cadastrar_obj,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()){
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            case R.id.btnConfirm:
+                if(!validarCampo(etCodigo)|
+                        !validarCampo(etNome)|
+                        !validarCampo(etLocal)|
+                        !validarCampo(etData)|
+                        !validarCampo(etDepto)|
+                        !validarCampo(etNota)|
+                        !validarCampo(etRecebedor)){
+                    return true;
+                }else {
+                    if(flagDateDialogOpened){
+                        if(dateDialog.isFlagDateSeted()){
+                            dia = dateDialog.getDia();
+                            mes = dateDialog.getMes();
+                            ano = dateDialog.getAno();
+                        }
+                    }
+                    itemSingleton.setCodigo(etCodigo.getEditText().getText().toString());
+                    itemSingleton.setNome(etNome.getEditText().getText().toString());
+                    itemSingleton.setDescricao(etDescricao.getEditText().getText().toString());
+                    itemSingleton.setLocal(etLocal.getEditText().getText().toString());
+                    itemSingleton.setDepto(etDepto.getEditText().getText().toString());
+                    itemSingleton.setDia(dia);
+                    itemSingleton.setMes(mes);
+                    itemSingleton.setAno(ano);
+                    itemSingleton.setRecebeu(etRecebedor.getEditText().getText().toString());
+                    itemSingleton.setNota(etNota.getEditText().getText().toString());
+                    itemSingleton.setFoto(etNome.getEditText().getText().toString().replaceAll(" ","_") + "_" + etCodigo.getEditText().getText().toString() + ".jpg");
+                    itemSingleton.setImg(bmpToByteArray());
+                    JSONObject jsonObject = itemSingleton.ItemtoJSON();
+                    JSONObject jsonImg = new JSONObject();
+                    try {
+                        jsonObject.put("codigoAntigo",codigoAntigo);
+                        jsonObject.put("fotoAntigo",fotoAntigo);
+                        jsonImg.put("nome",itemSingleton.getFoto());
+                        jsonImg.put("img",bmptoString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    new EditObjDataRequest(jsonObject.toString()).execute();
+                    new PostObjImgRequest(jsonImg.toString()).execute();
+                    Intent it = new Intent(this, VisualizarObjActivity.class);
+//                    Bundle bundle = new Bundle();
+//                    bundle.putString("cod", etCodigo.getEditText().getText().toString());
+//                    bundle.putString("nome", etNome.getEditText().getText().toString());
+//                    bundle.putString("descricao", etDescricao.getEditText().getText().toString());
+//                    bundle.putString("local", etLocal.getEditText().getText().toString());
+//                    bundle.putString("depto", etDepto.getEditText().getText().toString());
+//                    bundle.putString("dia", String.valueOf(dia));
+//                    bundle.putString("mes", String.valueOf(mes));
+//                    bundle.putString("ano", String.valueOf(ano));
+//                    bundle.putString("recebedor", etRecebedor.getEditText().getText().toString());
+//                    bundle.putString("nota", etNota.getEditText().getText().toString());
+//                    bundle.putByteArray("img", bmpToByteArray());
+//                    it.putExtras(bundle);
+                    startActivity(it);
+                    finish();
+                }
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void escolherImagem(View view) {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(intent,IMG_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode==IMG_REQUEST && resultCode==RESULT_OK && data!=null){
+            Uri path = data.getData();
+            try {
+                img = MediaStore.Images.Media.getBitmap(getContentResolver(),path);
+                fotoView.setImageBitmap(img);
+                fotoView.setVisibility(View.VISIBLE);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public String bmptoString(){
+        return Base64.encodeToString(bmpToByteArray(),Base64.DEFAULT);
+    }
+
+    public byte[] bmpToByteArray(){
+        if(img == null){
+            img = BitmapFactory.decodeResource(getResources(),R.drawable.no_foto);
+        }
+        ByteArrayOutputStream b_stream = new ByteArrayOutputStream();
+        if(img.getHeight() > 2000){
+            img = Bitmap.createScaledBitmap(img,(int)(img.getWidth()*0.25),(int)(img.getHeight()*0.25),true);
+        }else{
+            if(img.getHeight() > 1000){
+                img = Bitmap.createScaledBitmap(img,(int)(img.getWidth()*0.5),(int)(img.getHeight()*0.5),true);
+            }
+        }
+        img.compress(Bitmap.CompressFormat.JPEG,50,b_stream);
+        return b_stream.toByteArray();
+    }
+
+    public boolean validarCampo(TextInputLayout til){
+        String str = til.getEditText().getText().toString();
+        if(str.isEmpty()){
+            til.setError("Este campo é obrigatório");
+            return false;
+        }else{
+            til.setError(null);
+            return true;
+        }
+    }
+
+    public String[] splitDate(String date){
+        String str[] = date.split("/");
+        return str;
+    }
+
+}
