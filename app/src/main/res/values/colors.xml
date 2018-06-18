@@ -9,4 +9,5 @@
     <color name="colorDivider">#BDBDBD</color>
     <color name="white">#FFFFFF</color>
     <color name="greyBg">#EEEEEE</color>
+    <color name="itemBackgroundColor">#fa315b</color>
 </resources>

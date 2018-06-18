@@ -5,4 +5,5 @@
     <dimen name="imgHeight">214dp</dimen>
     <dimen name="photoTextSize">25sp</dimen>
     <dimen name="objectNameListSize">20dp</dimen>
+    <dimen name="deleteIconPadding">10dp</dimen>
 </resources>

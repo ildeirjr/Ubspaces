@@ -1,6 +1,7 @@
 package br.ufop.ildeir.ubspaces.requests;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
+import br.ufop.ildeir.ubspaces.activities.ScanActivity;
 import br.ufop.ildeir.ubspaces.miscellaneous.UbspaceURL;
 import br.ufop.ildeir.ubspaces.objects.Item;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
@@ -40,15 +42,20 @@ public class GetAllObjRequest extends AsyncTask<String,Void,ArrayList<Item>> {
             if(responseCode == 401){
                 SessionManager.getInstance().toLoginActivity();
             }
-            String result = new Scanner(conn.getInputStream()).nextLine();
+            String result = "";
+            Scanner scanner = new Scanner(conn.getInputStream());
+            while(scanner.hasNext()){
+                result += scanner.nextLine();
+            }
             JSONArray objectJSONArray = new JSONArray(result);
             if(!objectJSONArray.isNull(0)){
                 for(int i=0 ; i<objectJSONArray.length() ; i++){
                     item = new Item();
                     item.JSONtoItem((JSONObject) objectJSONArray.get(i));
                     objectArrayList.add(item);
+                    Log.e("if","laço");
                 }
-            }
+            } else Log.e("if","ELSE");
             conn.disconnect();
             return objectArrayList;
         } catch (MalformedURLException e) {

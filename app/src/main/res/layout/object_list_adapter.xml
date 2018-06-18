@@ -1,12 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/item_list_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/itemBackgroundColor">
+
+        <ImageView
+            android:id="@+id/delete_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_delete"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:padding="@dimen/deleteIconPadding"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@id/delete_icon"
+            android:textColor="@color/white"
+            android:text="DELETE"
+            />
+
+    </RelativeLayout>
 
     <LinearLayout
+        android:id="@+id/item_list_foreground"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:background="@color/white">
 
         <ImageView
             android:id="@+id/objectImg"
@@ -39,4 +69,4 @@
 
     </LinearLayout>
 
-</android.support.constraint.ConstraintLayout>
+</FrameLayout>
