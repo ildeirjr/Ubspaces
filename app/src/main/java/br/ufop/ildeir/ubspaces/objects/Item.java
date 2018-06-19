@@ -6,6 +6,8 @@ import android.graphics.BitmapFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
+
 /**
  * Created by Ildeir on 24/05/2018.
  */
@@ -170,4 +172,41 @@ public class Item {
         return bitmap;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Item item = (Item) o;
+
+        if (dia != item.dia) return false;
+        if (mes != item.mes) return false;
+        if (ano != item.ano) return false;
+        if (!codigo.equals(item.codigo)) return false;
+        if (!nome.equals(item.nome)) return false;
+        if (!local.equals(item.local)) return false;
+        if (!nota.equals(item.nota)) return false;
+        if (!recebeu.equals(item.recebeu)) return false;
+        if (!depto.equals(item.depto)) return false;
+        if (!descricao.equals(item.descricao)) return false;
+        if (!foto.equals(item.foto)) return false;
+        return Arrays.equals(img, item.img);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = codigo.hashCode();
+        result = 31 * result + nome.hashCode();
+        result = 31 * result + dia;
+        result = 31 * result + mes;
+        result = 31 * result + ano;
+        result = 31 * result + local.hashCode();
+        result = 31 * result + nota.hashCode();
+        result = 31 * result + recebeu.hashCode();
+        result = 31 * result + depto.hashCode();
+        result = 31 * result + descricao.hashCode();
+        result = 31 * result + foto.hashCode();
+        result = 31 * result + Arrays.hashCode(img);
+        return result;
+    }
 }

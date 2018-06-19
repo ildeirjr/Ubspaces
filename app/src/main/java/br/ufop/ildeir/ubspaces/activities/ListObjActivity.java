@@ -3,14 +3,19 @@ package br.ufop.ildeir.ubspaces.activities;
 import android.content.Intent;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.util.SortedList;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -24,6 +29,7 @@ import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.adapters.ObjectListAdapter;
 import br.ufop.ildeir.ubspaces.adapters.RecyclerListAdapter;
 import br.ufop.ildeir.ubspaces.miscellaneous.RecyclerItemTouchHelper;
+import br.ufop.ildeir.ubspaces.miscellaneous.WrapContentLinearLayoutManager;
 import br.ufop.ildeir.ubspaces.objects.Item;
 import br.ufop.ildeir.ubspaces.requests.DeleteObjRequest;
 import br.ufop.ildeir.ubspaces.requests.GetAllObjRequest;
@@ -31,7 +37,7 @@ import br.ufop.ildeir.ubspaces.requests.GetObjImgRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 import br.ufop.ildeir.ubspaces.singleton.ObjectListSingleton;
 
-public class ListObjActivity extends AppCompatActivity implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
+public class ListObjActivity extends AppCompatActivity implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener, android.support.v7.widget.SearchView.OnQueryTextListener {
 
     private ListView listView;
     private RecyclerView recyclerView;
@@ -51,8 +57,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
         coordinatorLayout = findViewById(R.id.coordinator_layout);
         recyclerView = findViewById(R.id.recycler_view);
 
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setLayoutManager(new WrapContentLinearLayoutManager(getApplicationContext()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
 
@@ -76,6 +81,18 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_list_obj,menu);
+        final MenuItem searchItem = menu.findItem(R.id.search_btn);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setOnQueryTextListener(this);
+        return true;
+    }
+
+
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case android.R.id.home:
@@ -95,7 +112,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                 itemsArrayList.get(i).setImg(new GetObjImgRequest(itemsArrayList.get(i).getFoto()).execute().get());
             }
             ObjectListSingleton.getInstance().setObjectList(itemsArrayList);
-            recyclerListAdapter = new RecyclerListAdapter(this,ObjectListSingleton.getInstance().getObjectList());
+            recyclerListAdapter = new RecyclerListAdapter(this, ObjectListSingleton.getInstance().getObjectList());
             recyclerView.setAdapter(recyclerListAdapter);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -116,17 +133,16 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
         if(viewHolder instanceof RecyclerListAdapter.MyViewHolder){
-            ArrayList<Item> itemList = ObjectListSingleton.getInstance().getObjectList();
+            SortedList<Item> itemList = recyclerListAdapter.getSortedList();
 
             //get the removed item name to display it in snack bar
             String name = itemList.get(viewHolder.getAdapterPosition()).getNome();
 
             //backup of removed item for undo purpose
             final Item deletedItem = itemList.get(viewHolder.getAdapterPosition());
-            final int deletedIndex = viewHolder.getAdapterPosition();
 
             //remove the item from recycler view
-            recyclerListAdapter.removeItem(viewHolder.getAdapterPosition());
+            recyclerListAdapter.removeItem(deletedItem);
             deletedItems.add(deletedItem);
 
             //showing snack bar with Undo option
@@ -135,11 +151,41 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                 @Override
                 public void onClick(View view) {
                     //restore the deleted item
-                    recyclerListAdapter.restoreItem(deletedItem, deletedIndex);
+                    recyclerListAdapter.restoreItem(deletedItem);
                     deletedItems.remove(deletedItems.size()-1);
                 }
             });
             snackbar.show();
         }
     }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        final ArrayList<Item> filteredModelList = filter(ObjectListSingleton.getInstance().getObjectList(), newText);
+        Log.e("tamanho filtrada",String.valueOf(filteredModelList.size()));
+        recyclerListAdapter.replaceAll(filteredModelList);
+        recyclerView.scrollToPosition(0);
+        return true;
+    }
+
+    private static ArrayList<Item> filter(ArrayList<Item> models, String query) {
+        final String lowerCaseQuery = query.toLowerCase();
+
+        final ArrayList<Item> filteredModelList = new ArrayList<>();
+        for (Item model : models) {
+            final String text = model.getNome().toLowerCase();
+            if (text.contains(lowerCaseQuery)) {
+                filteredModelList.add(model);
+            }
+        }
+        return filteredModelList;
+    }
+
+
+
 }
