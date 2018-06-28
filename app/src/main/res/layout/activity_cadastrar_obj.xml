@@ -24,20 +24,39 @@
                 android:paddingLeft="@dimen/paddingSide"
                 android:paddingRight="@dimen/paddingSide">
 
-                <android.support.design.widget.TextInputLayout
-                    android:id="@+id/layoutCod"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:errorEnabled="true">
+                    android:orientation="horizontal">
 
-                    <android.support.design.widget.TextInputEditText
-                        android:id="@+id/editCodigo"
+                    <android.support.design.widget.TextInputLayout
+                        android:id="@+id/layoutCod"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="number"
-                        android:hint="Código" />
+                        app:errorEnabled="true"
+                        android:layout_weight="1">
 
-                </android.support.design.widget.TextInputLayout>
+                        <android.support.design.widget.TextInputEditText
+                            android:id="@+id/editCodigo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:hint="Código" />
+
+                    </android.support.design.widget.TextInputLayout>
+
+                    <ImageButton
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_qr_scan"
+                        android:layout_weight="5"
+                        android:background="@color/zxing_transparent"
+                        android:layout_gravity="center"
+                        android:onClick="code_scan"/>
+
+                </LinearLayout>
+
+
 
                 <android.support.design.widget.TextInputLayout
                     android:id="@+id/layoutNome"
@@ -140,7 +159,7 @@
                         android:id="@+id/editNota"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="text"
+                        android:inputType="number"
                         android:hint="Nota fiscal"/>
 
                 </android.support.design.widget.TextInputLayout>

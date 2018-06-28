@@ -1,14 +1,14 @@
 package br.ufop.ildeir.ubspaces.activities;
 
+import android.app.AlertDialog;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
@@ -17,6 +17,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,8 +31,10 @@ import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.miscellaneous.DateDialog;
 import br.ufop.ildeir.ubspaces.R;
+import br.ufop.ildeir.ubspaces.requests.GetUserRequest;
 import br.ufop.ildeir.ubspaces.requests.PostObjDataRequest;
 import br.ufop.ildeir.ubspaces.requests.PostObjImgRequest;
+import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 
 
 public class CadastrarObjActivity extends AppCompatActivity {
@@ -45,15 +51,32 @@ public class CadastrarObjActivity extends AppCompatActivity {
     private ImageView fotoView;
     private int dia,mes,ano;
     private DateDialog dateDialog;
-    private static int IMG_REQUEST = 1;
+    private static int IMG_GALLERY = 1;
+    private static int IMG_CAMERA = 2;
     Bitmap img;
     byte[] b;
     boolean imgSeted = false;
+
+    IntentIntegrator intentIntegrator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastrar_obj);
+
+        try {
+            String user = new GetUserRequest(SessionManager.getInstance().getUserId()).execute().get();
+            if(user == null){
+                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
+                SessionManager.getInstance().toLoginActivity();
+                finish();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle("Cadastrar objeto");
@@ -67,6 +90,8 @@ public class CadastrarObjActivity extends AppCompatActivity {
         etRecebedor = findViewById(R.id.layoutRecebedor);
         etNota = findViewById(R.id.layoutNota);
         fotoView = findViewById(R.id.addImg);
+
+        intentIntegrator = new IntentIntegrator(this);
 
         etData.getEditText().setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -126,14 +151,21 @@ public class CadastrarObjActivity extends AppCompatActivity {
                             //Log.e("imagem_nome",jsonObject.getString("foto"));
                             jsonImg.put("nome",jsonObject.getString("foto"));
                             jsonImg.put("img",bmptoString());
-                            String result = new PostObjImgRequest(jsonImg.toString()).execute().get();
+                            String result = new PostObjImgRequest(jsonImg.toString(),this).execute().get();
+                            if(result.equals("401")){
+                                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
+                                finish();
+                            }
                             //Log.e("result",result);
                         }else{
                             jsonObject.put("foto","null.jpg");
                         }
                         //Log.e("teste","DEPOIS DO IF");
-                        new PostObjDataRequest(jsonObject.toString()).execute();
-                        Snackbar.make(findViewById(R.id.btnConfirm),"Objeto cadastrado com sucesso",Snackbar.LENGTH_LONG).show();
+                        String result = new PostObjDataRequest(jsonObject.toString()).execute().get();
+                        if(result.equals("401")){
+                            Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
                         finish();
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -150,24 +182,68 @@ public class CadastrarObjActivity extends AppCompatActivity {
     }
 
     public void escolherImagem(View view) {
+        AlertDialog.Builder pictureDialog = new AlertDialog.Builder(this);
+        pictureDialog.setTitle("Selecione uma opção");
+        String[] pictureDialogItems = {"Galeria","Camera"};
+        pictureDialog.setCancelable(true);
+        pictureDialog.setItems(pictureDialogItems, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                switch (i){
+                    case 0:
+                        imageFromGallery();
+                        break;
+                    case 1:
+                        imageFromCamera();
+                        break;
+                }
+            }
+        });
+        pictureDialog.show();
+    }
+
+    public void imageFromGallery(){
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent,IMG_REQUEST);
+        startActivityForResult(intent, IMG_GALLERY);
+    }
+
+    public void imageFromCamera(){
+        Intent it = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(it, IMG_CAMERA);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==IMG_REQUEST && resultCode==RESULT_OK && data!=null){
-            Uri path = data.getData();
-            try {
+        if(requestCode== IMG_GALLERY){
+            if(resultCode==RESULT_OK && data!=null) {
+                Uri path = data.getData();
+                try {
+                    imgSeted = true;
+                    img = MediaStore.Images.Media.getBitmap(getContentResolver(), path);
+                    fotoView.setImageBitmap(img);
+                    fotoView.setVisibility(View.VISIBLE);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }else if(requestCode == IMG_CAMERA) {
+            if(data != null) {
+                Log.e("camera", "IF CAMERA");
                 imgSeted = true;
-                img = MediaStore.Images.Media.getBitmap(getContentResolver(),path);
+                img = (Bitmap) data.getExtras().get("data");
                 fotoView.setImageBitmap(img);
                 fotoView.setVisibility(View.VISIBLE);
-            } catch (IOException e) {
-                e.printStackTrace();
+            }
+        }else{
+            IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+            if(intentResult != null){
+                String scannedCode = intentResult.getContents();
+                if(scannedCode != null){
+                    etCodigo.getEditText().setText(scannedCode);
+                }
             }
         }
     }
@@ -202,4 +278,13 @@ public class CadastrarObjActivity extends AppCompatActivity {
             return true;
         }
     }
+
+    public void code_scan(View view) {
+        intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
+        intentIntegrator.setBeepEnabled(false);
+        intentIntegrator.initiateScan();
+    }
+
+
+
 }

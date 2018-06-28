@@ -2,4 +2,6 @@
     <string name="app_name">Ubspaces</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
+    <string name="invalid_operator">Você não possui permissão para realizar esta operação.</string>
+    <string name="error_401">ERROR_401</string>
 </resources>

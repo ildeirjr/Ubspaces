@@ -1,7 +1,9 @@
 package br.ufop.ildeir.ubspaces.requests;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -9,6 +11,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
+import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.miscellaneous.UbspaceURL;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 
@@ -36,8 +39,11 @@ public class GetUserRequest extends AsyncTask<String,Void,String> {
             conn.setDoInput(true);
             conn.connect();
             int responseCode = conn.getResponseCode();
+            Log.e("response_code",String.valueOf(responseCode));
             if(responseCode == 401){
+                Log.e("login","LOGIN ERRADO!!");
                 SessionManager.getInstance().toLoginActivity();
+                return "401";
             }
             String result = new Scanner(conn.getInputStream()).next();
             conn.disconnect();

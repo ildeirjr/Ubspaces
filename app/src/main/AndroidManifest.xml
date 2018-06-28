@@ -47,6 +47,7 @@
                 android:resource="@xml/searchable"/>
 
         </activity>
+        <activity android:name=".activities.VisualizeObjActivity"/>
     </application>
 
 </manifest>

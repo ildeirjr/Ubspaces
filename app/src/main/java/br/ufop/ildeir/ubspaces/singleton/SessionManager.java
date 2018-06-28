@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+
 import br.ufop.ildeir.ubspaces.activities.LoginActivity;
 
 /**
@@ -58,8 +60,7 @@ public class SessionManager {
 
     public void toLoginActivity(){
             Intent intent = new Intent(context, LoginActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
             context.startActivity(intent);
     }
 

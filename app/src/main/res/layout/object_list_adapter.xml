@@ -38,18 +38,52 @@
         android:orientation="horizontal"
         android:background="@color/white">
 
-        <ImageView
-            android:id="@+id/objectImg"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@drawable/ic_camera"
-            android:layout_margin="10dp"/>
+        <RelativeLayout
+            android:id="@+id/icon_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_margin="20dp">
+
+            <RelativeLayout
+                android:id="@+id/icon_back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:layout_width="@dimen/icon_width_height"
+                    android:layout_height="@dimen/icon_width_height"
+                    android:src="@drawable/bg_circle"
+                    />
+
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="@dimen/icon_width_height"
+                    android:layout_centerInParent="true"
+                    android:src="@drawable/ic_done_white_24dp" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/icon_front"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/objectImg"
+                    android:layout_width="@dimen/icon_width_height"
+                    android:layout_height="@dimen/icon_width_height"
+                    android:src="@drawable/ic_camera" />
+
+            </RelativeLayout>
+
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_gravity="center">
+            android:layout_gravity="center_vertical">
 
             <TextView
                 android:id="@+id/objectName"
@@ -66,6 +100,21 @@
                 android:text="Código: "/>
 
         </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/objectDate"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical|end"
+            android:text="TESTE"
+            android:layout_margin="20dp"/>
 
     </LinearLayout>
 

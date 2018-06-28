@@ -172,6 +172,28 @@ public class Item {
         return bitmap;
     }
 
+    public int compareItemDate(Item item){
+        if(dia == item.getDia() && mes == item.getMes() && ano == item.getAno()){
+            return 0;
+        } else if(dia > item.getDia() && mes == item.getMes() && ano == item.getAno()){
+            return 1;
+        } else if(dia == item.getDia() && mes > item.getMes() && ano == item.getAno()){
+            return 1;
+        } else if(dia == item.getDia() && mes == item.getMes() && ano > item.getAno()){
+            return 1;
+        } else if(dia > item.getDia() && mes > item.getMes() && ano == item.getAno()){
+            return 1;
+        } else if(dia > item.getDia() && mes == item.getMes() && ano > item.getAno()){
+            return 1;
+        } else if(dia == item.getDia() && mes > item.getMes() && ano > item.getAno()){
+            return 1;
+        } else if(dia > item.getDia() && mes > item.getMes() && ano > item.getAno()){
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

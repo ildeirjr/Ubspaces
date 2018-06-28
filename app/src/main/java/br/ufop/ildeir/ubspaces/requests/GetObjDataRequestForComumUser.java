@@ -1,8 +1,6 @@
 package br.ufop.ildeir.ubspaces.requests;
 
-import android.content.Context;
 import android.os.AsyncTask;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,20 +11,19 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
-import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.miscellaneous.UbspaceURL;
 import br.ufop.ildeir.ubspaces.objects.Item;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 
 /**
- * Created by Ildeir on 22/05/2018.
+ * Created by Ildeir on 21/06/2018.
  */
 
-public class GetObjDataRequest extends AsyncTask<String,Void,Item> {
+public class GetObjDataRequestForComumUser extends AsyncTask<String,Void,Item> {
 
     private String idObject;
 
-    public GetObjDataRequest(String idObject, Context context){
+    public GetObjDataRequestForComumUser(String idObject) {
         this.idObject = idObject;
     }
 
@@ -38,13 +35,12 @@ public class GetObjDataRequest extends AsyncTask<String,Void,Item> {
             //Log.e("teste",new UbspaceURL().getUrl() + "?id=" + idObject);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
-            conn.setRequestProperty("Authorization", SessionManager.getInstance().getUserToken());
+            conn.setRequestProperty("Authorization", "1gdh87efuhwi");
             conn.setDoInput(true);
             conn.connect();
             int responseCode = conn.getResponseCode();
             if(responseCode == 401){
                 SessionManager.getInstance().toLoginActivity();
-                return null;
             }
             String result = new Scanner(conn.getInputStream()).nextLine();
             jsonItem = new JSONObject(result);

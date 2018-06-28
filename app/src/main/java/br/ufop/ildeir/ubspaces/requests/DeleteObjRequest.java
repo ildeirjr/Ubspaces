@@ -1,6 +1,8 @@
 package br.ufop.ildeir.ubspaces.requests;
 
+import android.content.Context;
 import android.os.AsyncTask;
+import android.widget.Toast;
 
 import com.google.zxing.client.android.Intents;
 
@@ -11,6 +13,7 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Scanner;
 
+import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.miscellaneous.UbspaceURL;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 
@@ -42,6 +45,7 @@ public class DeleteObjRequest extends AsyncTask<String,Void,String> {
             int responseCode = conn.getResponseCode();
             if(responseCode == 401){
                 SessionManager.getInstance().toLoginActivity();
+                return "401";
             }
             Scanner scanner = new Scanner(conn.getInputStream());
             String result = "";

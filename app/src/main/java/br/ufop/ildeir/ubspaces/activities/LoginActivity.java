@@ -9,14 +9,23 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.R;
+import br.ufop.ildeir.ubspaces.objects.Item;
+import br.ufop.ildeir.ubspaces.requests.GetObjDataRequest;
+import br.ufop.ildeir.ubspaces.requests.GetObjDataRequestForComumUser;
+import br.ufop.ildeir.ubspaces.requests.GetObjImgRequest;
+import br.ufop.ildeir.ubspaces.requests.GetObjImgRequestForComumUser;
 import br.ufop.ildeir.ubspaces.requests.GetUserRequest;
 import br.ufop.ildeir.ubspaces.requests.LoginRequest;
+import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 import br.ufop.ildeir.ubspaces.singleton.UserSingleton;
 
@@ -25,6 +34,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText email;
     private EditText senha;
     private Button btnLogin;
+    private IntentIntegrator intentIntegrator;
 
 
     @Override
@@ -37,6 +47,8 @@ public class LoginActivity extends AppCompatActivity {
         email = findViewById(R.id.usrEmail);
         senha = findViewById(R.id.usrPass);
         btnLogin = findViewById(R.id.btnLogin);
+
+        intentIntegrator = new IntentIntegrator(this);
     }
 
     public void login(View view) {
@@ -84,6 +96,45 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        System.exit(0);
+    }
 
+    public void scan(View view) {
+        intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
+        intentIntegrator.setBeepEnabled(false);
+        intentIntegrator.initiateScan();
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Intent showObject = new Intent(this,VisualizeObjActivity.class);
+        Intent objNotFound = new Intent(this,ObjNotFoundActivity.class);
+        showObject.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode,resultCode,data);
+        if(intentResult != null){
+            if(intentResult.getContents() != null){
+                try {
+                    Log.e("item scan",intentResult.getContents());
+                    Item item = new GetObjDataRequestForComumUser(intentResult.getContents()).execute().get();
+                    if(item != null){
+                        item.setImg(new GetObjImgRequestForComumUser(item.getFoto()).execute().get());
+                        ItemSingleton.getInstance().setItemSingleton(item);
+                        startActivity(showObject);
+                    }else{
+                        startActivity(objNotFound);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
 }

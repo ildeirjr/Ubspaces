@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -23,6 +24,7 @@ import br.ufop.ildeir.ubspaces.objects.Item;
 import br.ufop.ildeir.ubspaces.requests.ClearUserTokenRequest;
 import br.ufop.ildeir.ubspaces.requests.GetObjDataRequest;
 import br.ufop.ildeir.ubspaces.requests.GetObjImgRequest;
+import br.ufop.ildeir.ubspaces.requests.GetUserRequest;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 import br.ufop.ildeir.ubspaces.singleton.UserSingleton;
@@ -95,9 +97,22 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void scan(View view) {
-        intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
-        intentIntegrator.setBeepEnabled(false);
-        intentIntegrator.initiateScan();
+        try {
+            String user = new GetUserRequest(SessionManager.getInstance().getUserId()).execute().get();
+            if(user.equals("401")){
+                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
+                SessionManager.getInstance().toLoginActivity();
+                finish();
+            } else {
+                intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
+                intentIntegrator.setBeepEnabled(false);
+                intentIntegrator.initiateScan();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -109,7 +124,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         if(intentResult != null){
             if(intentResult.getContents() != null){
                 try {
-                    Item item = new GetObjDataRequest(intentResult.getContents()).execute().get();
+                    Item item = new GetObjDataRequest(intentResult.getContents(),this).execute().get();
                     if(item != null){
                         item.setImg(new GetObjImgRequest(item.getFoto()).execute().get());
                         ItemSingleton.getInstance().setItemSingleton(item);

@@ -6,6 +6,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.BottomSheetDialog;
+import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,14 +17,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.miscellaneous.DateDialog;
 import br.ufop.ildeir.ubspaces.R;
@@ -51,6 +57,9 @@ public class EditarObjActivity extends AppCompatActivity {
     private boolean flagDateDialogOpened = false;
     private String codigoAntigo, fotoAntigo;
     private Item itemSingleton;
+    private boolean imgSeted = false;
+
+    private IntentIntegrator intentIntegrator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +129,8 @@ public class EditarObjActivity extends AppCompatActivity {
             fotoAntigo = itemSingleton.getFoto();
         }
 
+        intentIntegrator = new IntentIntegrator(this);
+
     }
 
     @Override
@@ -174,8 +185,18 @@ public class EditarObjActivity extends AppCompatActivity {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    new EditObjDataRequest(jsonObject.toString()).execute();
-                    new PostObjImgRequest(jsonImg.toString()).execute();
+                    try {
+                        String result = new EditObjDataRequest(jsonObject.toString()).execute().get();
+                        if(result.equals("401")){
+                            Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_LONG).show();
+                            finish();
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                    new PostObjImgRequest(jsonImg.toString(),this).execute();
                     Intent it = new Intent(this, VisualizarObjActivity.class);
 //                    Bundle bundle = new Bundle();
 //                    bundle.putString("cod", etCodigo.getEditText().getText().toString());
@@ -208,14 +229,25 @@ public class EditarObjActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==IMG_REQUEST && resultCode==RESULT_OK && data!=null){
-            Uri path = data.getData();
-            try {
-                img = MediaStore.Images.Media.getBitmap(getContentResolver(),path);
-                fotoView.setImageBitmap(img);
-                fotoView.setVisibility(View.VISIBLE);
-            } catch (IOException e) {
-                e.printStackTrace();
+        if(requestCode==IMG_REQUEST){
+            if(resultCode==RESULT_OK && data!=null) {
+                Uri path = data.getData();
+                try {
+                    imgSeted = true;
+                    img = MediaStore.Images.Media.getBitmap(getContentResolver(), path);
+                    fotoView.setImageBitmap(img);
+                    fotoView.setVisibility(View.VISIBLE);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }else{
+            IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+            if(intentResult != null){
+                String scannedCode = intentResult.getContents();
+                if(scannedCode != null){
+                    etCodigo.getEditText().setText(scannedCode);
+                }
             }
         }
     }
@@ -256,4 +288,9 @@ public class EditarObjActivity extends AppCompatActivity {
         return str;
     }
 
+    public void code_scan(View view) {
+        intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
+        intentIntegrator.setBeepEnabled(false);
+        intentIntegrator.initiateScan();
+    }
 }

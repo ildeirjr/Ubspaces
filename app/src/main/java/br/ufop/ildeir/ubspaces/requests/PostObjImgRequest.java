@@ -1,6 +1,8 @@
 package br.ufop.ildeir.ubspaces.requests;
 
+import android.content.Context;
 import android.os.AsyncTask;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -9,6 +11,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
+import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.miscellaneous.UbspaceURL;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 
@@ -20,7 +23,7 @@ public class PostObjImgRequest extends AsyncTask<Void,Void,String> {
 
     private String imgContent;
 
-    public PostObjImgRequest(String imgContent){
+    public PostObjImgRequest(String imgContent, Context context){
         this.imgContent = imgContent;
     }
 
@@ -39,6 +42,7 @@ public class PostObjImgRequest extends AsyncTask<Void,Void,String> {
             int responseCode = conn.getResponseCode();
             if(responseCode == 401){
                 SessionManager.getInstance().toLoginActivity();
+                return "401";
             }
             Scanner scanner = new Scanner(conn.getInputStream());
             String result = "";

@@ -1,7 +1,9 @@
 package br.ufop.ildeir.ubspaces.requests;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 
+import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.activities.ScanActivity;
 import br.ufop.ildeir.ubspaces.miscellaneous.UbspaceURL;
 import br.ufop.ildeir.ubspaces.objects.Item;
@@ -41,6 +44,7 @@ public class GetAllObjRequest extends AsyncTask<String,Void,ArrayList<Item>> {
             int responseCode = conn.getResponseCode();
             if(responseCode == 401){
                 SessionManager.getInstance().toLoginActivity();
+                return null;
             }
             String result = "";
             Scanner scanner = new Scanner(conn.getInputStream());

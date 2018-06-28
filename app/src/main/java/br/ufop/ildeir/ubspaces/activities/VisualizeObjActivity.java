@@ -3,30 +3,26 @@ package br.ufop.ildeir.ubspaces.activities;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.v4.app.NavUtils;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.requests.DeleteObjRequest;
-import br.ufop.ildeir.ubspaces.requests.GetUserRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
-import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 
-public class VisualizarObjActivity extends AppCompatActivity {
+/**
+ * Created by Ildeir on 21/06/2018.
+ */
+
+public class VisualizeObjActivity extends AppCompatActivity {
 
     private TextView textNome;
     private TextView textCodigo;
@@ -43,19 +39,6 @@ public class VisualizarObjActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_visualizar_obj);
-
-        try {
-            String user = new GetUserRequest(SessionManager.getInstance().getUserId()).execute().get();
-            if(user == null){
-                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_LONG).show();
-                SessionManager.getInstance().toLoginActivity();
-                finish();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
 
         if(getSupportActionBar() != null){
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -79,56 +62,14 @@ public class VisualizarObjActivity extends AppCompatActivity {
             textLocal.setText(ItemSingleton.getInstance().getItemSingleton().getLocal());
             textDepto.setText(ItemSingleton.getInstance().getItemSingleton().getDepto());
             textData.setText(ItemSingleton.getInstance().getItemSingleton().getDia() + "/" +
-                             ItemSingleton.getInstance().getItemSingleton().getMes() + "/" +
-                             ItemSingleton.getInstance().getItemSingleton().getAno());
+                    ItemSingleton.getInstance().getItemSingleton().getMes() + "/" +
+                    ItemSingleton.getInstance().getItemSingleton().getAno());
             textRecebedor.setText(ItemSingleton.getInstance().getItemSingleton().getRecebeu());
             textNota.setText(ItemSingleton.getInstance().getItemSingleton().getNota());
             img = BitmapFactory.decodeByteArray(ItemSingleton.getInstance().getItemSingleton().getImg(),0,ItemSingleton.getInstance().getItemSingleton().getImg().length);
             foto.setImageBitmap(img);
         }
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_visualizar_obj,menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        switch (item.getItemId()){
-            case android.R.id.home:
-                onBackPressed();
-                finish();
-                return true;
-            case R.id.btnEdit:
-                Intent it = new Intent(this, EditarObjActivity.class);
-                it.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(it);
-                finish();
-                return true;
-            case R.id.btnDelete:
-                try {
-                    String itemCode = ItemSingleton.getInstance().getItemSingleton().getCodigo();
-                    String itemImgPath = ItemSingleton.getInstance().getItemSingleton().getFoto();
-                    String result = new DeleteObjRequest(itemCode,itemImgPath).execute().get();
-                    if(result.equals("401")){
-                        Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_LONG).show();
-                        SessionManager.getInstance().toLoginActivity();
-                        finish();
-                    }
-                    Log.e("delete",result);
-                    finish();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     public byte[] bmpToByteArray(){
@@ -147,4 +88,13 @@ public class VisualizarObjActivity extends AppCompatActivity {
         return b_stream.toByteArray();
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()){
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }
