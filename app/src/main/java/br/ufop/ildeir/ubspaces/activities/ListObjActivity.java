@@ -49,6 +49,7 @@ import br.ufop.ildeir.ubspaces.requests.DeleteObjRequest;
 import br.ufop.ildeir.ubspaces.requests.GetAllObjRequest;
 import br.ufop.ildeir.ubspaces.requests.GetObjImgRequest;
 import br.ufop.ildeir.ubspaces.requests.GetUserRequest;
+import br.ufop.ildeir.ubspaces.requests.SearchObjByNameRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 import br.ufop.ildeir.ubspaces.singleton.ObjectListSingleton;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
@@ -106,6 +107,23 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
         final MenuItem searchItem = menu.findItem(R.id.search_btn);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setOnQueryTextListener(this);
+
+        searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                recyclerListAdapter.getSortedList().clear();
+                for(int k=0 ; k<recyclerListAdapter.getSortedListBackup().size() ; k++){
+                    recyclerListAdapter.restoreItem(recyclerListAdapter.getSortedListBackup().get(k));
+                }
+                return true;
+            }
+        });
+
         return true;
     }
 
@@ -209,45 +227,60 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
 
     @Override
     public boolean onQueryTextSubmit(String query) {
+        try {
+            final ArrayList<Item> filteredModelList = new SearchObjByNameRequest().execute(query).get();
+            if(filteredModelList != null){
+                for (int i=0 ; i<filteredModelList.size() ; i++){
+                    filteredModelList.get(i).setImg(new GetObjImgRequest(filteredModelList.get(i).getFoto()).execute().get());
+                }
+            }
+            recyclerListAdapter.replaceAll(filteredModelList);
+            recyclerListAdapter.getFilteredItemsByName().addAll(filteredModelList);
+            recyclerView.scrollToPosition(0);
+            return true;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        isNameFilterActivated = true;
-        recyclerListAdapter.getFilteredItemsByName().clear();
-        if(isFabSeted){
-            final ArrayList<Item> filteredModelList = filter(recyclerListAdapter.getFilteredItemsByDate(), newText);
-            Log.e("tamanho filtrada",String.valueOf(filteredModelList.size()));
-            recyclerListAdapter.replaceAll(filteredModelList);
-            recyclerListAdapter.getFilteredItemsByName().addAll(filteredModelList);
-            recyclerView.scrollToPosition(0);
-            return true;
-        } else{
-            final ArrayList<Item> filteredModelList = filter(recyclerListAdapter.getSortedListBackup(), newText);
-            Log.e("tamanho filtrada",String.valueOf(filteredModelList.size()));
-            recyclerListAdapter.replaceAll(filteredModelList);
-            recyclerListAdapter.getFilteredItemsByName().addAll(filteredModelList);
-            recyclerView.scrollToPosition(0);
-            return true;
-        }
-
-
+//        isNameFilterActivated = true;
+//        recyclerListAdapter.getFilteredItemsByName().clear();
+//        if(isFabSeted){
+//            final ArrayList<Item> filteredModelList = filter(recyclerListAdapter.getFilteredItemsByDate(), newText);
+//            Log.e("tamanho filtrada",String.valueOf(filteredModelList.size()));
+//            recyclerListAdapter.replaceAll(filteredModelList);
+//            recyclerListAdapter.getFilteredItemsByName().addAll(filteredModelList);
+//            recyclerView.scrollToPosition(0);
+//            return true;
+//        } else{
+//            final ArrayList<Item> filteredModelList = filter(recyclerListAdapter.getSortedListBackup(), newText);
+//            Log.e("tamanho filtrada",String.valueOf(filteredModelList.size()));
+//            recyclerListAdapter.replaceAll(filteredModelList);
+//            recyclerListAdapter.getFilteredItemsByName().addAll(filteredModelList);
+//            recyclerView.scrollToPosition(0);
+//            return true;
+//        }
+        return true;
     }
 
-    private static ArrayList<Item> filter(SortedList<Item> models, String query) {
-        final String lowerCaseQuery = query.toLowerCase();
-
-        final ArrayList<Item> filteredModelList = new ArrayList<>();
-        for (int i=0 ; i<models.size() ; i++) {
-            final Item item = models.get(i);
-            final String text = item.getNome().toLowerCase();
-            if (text.contains(lowerCaseQuery)) {
-                filteredModelList.add(item);
-            }
-        }
-        return filteredModelList;
-    }
+//    private static ArrayList<Item> filter(SortedList<Item> models, String query) {
+//        final String lowerCaseQuery = query.toLowerCase();
+//
+//        final ArrayList<Item> filteredModelList = new ArrayList<>();
+//        for (int i=0 ; i<models.size() ; i++) {
+//            final Item item = models.get(i);
+//            final String text = item.getNome().toLowerCase();
+//            if (text.contains(lowerCaseQuery)) {
+//                filteredModelList.add(item);
+//            }
+//        }
+//        return filteredModelList;
+//    }
 
 
     @Override

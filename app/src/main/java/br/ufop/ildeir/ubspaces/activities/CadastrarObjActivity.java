@@ -230,7 +230,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
                 }
             }
         }else if(requestCode == IMG_CAMERA) {
-            if(data != null) {
+            if(resultCode==RESULT_OK && data != null) {
                 Log.e("camera", "IF CAMERA");
                 imgSeted = true;
                 img = (Bitmap) data.getExtras().get("data");

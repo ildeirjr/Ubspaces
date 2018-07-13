@@ -79,6 +79,10 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapte
     private Context context;
     private MessageAdapterListener listener;
     private SparseBooleanArray selectedItems;
+    private OnLoadMoreListener onLoadMoreListener;
+
+    private final int VIEW_TYPE_ITEM = 0;
+    private final int VIEW_TYPE_LOADING = 1;
 
     // array used to perform multiple animation at once
     private SparseBooleanArray animationItemsIndex;
@@ -297,6 +301,10 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapte
         this.filteredItemsByName = filteredItemsByName;
     }
 
+    public void setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
+        this.onLoadMoreListener = onLoadMoreListener;
+    }
+
     public interface MessageAdapterListener {
 
         void onItemRowClicked(int position);
@@ -305,4 +313,9 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapte
 
         void onRowLongClicked(int position);
     }
+
+    public interface OnLoadMoreListener {
+        void onLoadMore();
+    }
+
 }
