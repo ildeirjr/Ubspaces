@@ -11,7 +11,7 @@ import org.json.JSONObject;
 import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.R;
-import br.ufop.ildeir.ubspaces.requests.GetUserRequest;
+import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 import br.ufop.ildeir.ubspaces.singleton.UserSingleton;
 

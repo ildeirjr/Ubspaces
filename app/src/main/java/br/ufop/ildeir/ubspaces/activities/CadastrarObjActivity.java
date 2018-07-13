@@ -31,9 +31,9 @@ import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.miscellaneous.DateDialog;
 import br.ufop.ildeir.ubspaces.R;
-import br.ufop.ildeir.ubspaces.requests.GetUserRequest;
-import br.ufop.ildeir.ubspaces.requests.PostObjDataRequest;
-import br.ufop.ildeir.ubspaces.requests.PostObjImgRequest;
+import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
+import br.ufop.ildeir.ubspaces.requests.post.PostObjDataRequest;
+import br.ufop.ildeir.ubspaces.requests.post.PostObjImgRequest;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 
 
@@ -151,6 +151,8 @@ public class CadastrarObjActivity extends AppCompatActivity {
                             //Log.e("imagem_nome",jsonObject.getString("foto"));
                             jsonImg.put("nome",jsonObject.getString("foto"));
                             jsonImg.put("img",bmptoString());
+                            createImgThumb();
+                            jsonImg.put("imgThumb", Base64.encodeToString(bmpToByteArray(),Base64.DEFAULT));
                             String result = new PostObjImgRequest(jsonImg.toString(),this).execute().get();
                             if(result.equals("401")){
                                 Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
@@ -266,6 +268,10 @@ public class CadastrarObjActivity extends AppCompatActivity {
         }
         img.compress(Bitmap.CompressFormat.JPEG,50,b_stream);
         return b_stream.toByteArray();
+    }
+
+    public void createImgThumb(){
+        img = Bitmap.createScaledBitmap(img,(int) (img.getWidth()*0.1),(int) (img.getHeight()*0.1),true);
     }
 
     public boolean validarCampo(TextInputLayout til){

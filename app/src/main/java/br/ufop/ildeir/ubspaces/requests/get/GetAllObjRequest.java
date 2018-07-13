@@ -1,4 +1,4 @@
-package br.ufop.ildeir.ubspaces.requests;
+package br.ufop.ildeir.ubspaces.requests.get;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -22,19 +22,20 @@ import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.activities.ScanActivity;
 import br.ufop.ildeir.ubspaces.miscellaneous.UbspaceURL;
 import br.ufop.ildeir.ubspaces.objects.Item;
+import br.ufop.ildeir.ubspaces.objects.RecyclerViewItem;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 
 /**
  * Created by Ildeir on 12/06/2018.
  */
 
-public class GetAllObjRequest extends AsyncTask<String,Void,ArrayList<Item>> {
+public class GetAllObjRequest extends AsyncTask<String,Void,ArrayList<RecyclerViewItem>> {
 
     @Override
-    protected ArrayList<Item> doInBackground(String... strings) {
+    protected ArrayList<RecyclerViewItem> doInBackground(String... strings) {
         try {
-            Item item;
-            ArrayList<Item> objectArrayList = new ArrayList<>();
+            RecyclerViewItem item;
+            ArrayList<RecyclerViewItem> objectArrayList = new ArrayList<>();
             URL url = new URL(new UbspaceURL().getUrl() + "listall/");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -54,7 +55,7 @@ public class GetAllObjRequest extends AsyncTask<String,Void,ArrayList<Item>> {
             JSONArray objectJSONArray = new JSONArray(result);
             if(!objectJSONArray.isNull(0)){
                 for(int i=0 ; i<objectJSONArray.length() ; i++){
-                    item = new Item();
+                    item = new RecyclerViewItem();
                     item.JSONtoItem((JSONObject) objectJSONArray.get(i));
                     objectArrayList.add(item);
                     Log.e("if","laço");

@@ -1,21 +1,16 @@
 package br.ufop.ildeir.ubspaces.activities;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
-import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.R;
-import br.ufop.ildeir.ubspaces.requests.DeleteObjRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 
 /**

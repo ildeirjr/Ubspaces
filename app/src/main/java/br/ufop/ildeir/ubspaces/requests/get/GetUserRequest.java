@@ -1,4 +1,4 @@
-package br.ufop.ildeir.ubspaces.requests;
+package br.ufop.ildeir.ubspaces.requests.get;
 
 import android.content.Context;
 import android.os.AsyncTask;

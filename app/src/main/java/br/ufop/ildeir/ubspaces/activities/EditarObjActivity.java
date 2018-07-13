@@ -6,9 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.design.widget.BottomSheetBehavior;
-import android.support.design.widget.BottomSheetDialog;
-import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -32,8 +29,8 @@ import java.util.concurrent.ExecutionException;
 import br.ufop.ildeir.ubspaces.miscellaneous.DateDialog;
 import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.objects.Item;
-import br.ufop.ildeir.ubspaces.requests.EditObjDataRequest;
-import br.ufop.ildeir.ubspaces.requests.PostObjImgRequest;
+import br.ufop.ildeir.ubspaces.requests.post.EditObjDataRequest;
+import br.ufop.ildeir.ubspaces.requests.post.PostObjImgRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 
 

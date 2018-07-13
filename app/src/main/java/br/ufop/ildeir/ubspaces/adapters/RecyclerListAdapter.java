@@ -27,6 +27,7 @@ import br.ufop.ildeir.ubspaces.activities.VisualizarObjActivity;
 import br.ufop.ildeir.ubspaces.miscellaneous.CircleTransform;
 import br.ufop.ildeir.ubspaces.miscellaneous.FlipAnimator;
 import br.ufop.ildeir.ubspaces.objects.Item;
+import br.ufop.ildeir.ubspaces.objects.RecyclerViewItem;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 
 /**
@@ -35,9 +36,9 @@ import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 
 public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapter.MyViewHolder> {
 
-    SortedList.Callback<Item> sortedListCallback = new SortedList.Callback<Item>() {
+    SortedList.Callback<RecyclerViewItem> sortedListCallback = new SortedList.Callback<RecyclerViewItem>() {
         @Override
-        public int compare(Item o1, Item o2) {
+        public int compare(RecyclerViewItem o1, RecyclerViewItem o2) {
             return o1.getNome().compareTo(o2.getNome());
         }
 
@@ -47,12 +48,12 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapte
         }
 
         @Override
-        public boolean areContentsTheSame(Item oldItem, Item newItem) {
+        public boolean areContentsTheSame(RecyclerViewItem oldItem, RecyclerViewItem newItem) {
             return oldItem.equals(newItem);
         }
 
         @Override
-        public boolean areItemsTheSame(Item item1, Item item2) {
+        public boolean areItemsTheSame(RecyclerViewItem item1, RecyclerViewItem item2) {
             return item1.getCodigo() == item2.getCodigo();
         }
 
@@ -72,10 +73,10 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapte
         }
     };
 
-    private final SortedList<Item> sortedList = new SortedList<Item>(Item.class, sortedListCallback);
-    private SortedList<Item> sortedListBackup = new SortedList<Item>(Item.class, sortedListCallback);
-    private SortedList<Item> filteredItemsByDate = new SortedList<Item>(Item.class, sortedListCallback);
-    private SortedList<Item> filteredItemsByName = new SortedList<Item>(Item.class, sortedListCallback);
+    private final SortedList<RecyclerViewItem> sortedList = new SortedList<RecyclerViewItem>(RecyclerViewItem.class, sortedListCallback);
+    private SortedList<RecyclerViewItem> sortedListBackup = new SortedList<RecyclerViewItem>(RecyclerViewItem.class, sortedListCallback);
+    private SortedList<RecyclerViewItem> filteredItemsByDate = new SortedList<RecyclerViewItem>(RecyclerViewItem.class, sortedListCallback);
+    private SortedList<RecyclerViewItem> filteredItemsByName = new SortedList<RecyclerViewItem>(RecyclerViewItem.class, sortedListCallback);
     private Context context;
     private MessageAdapterListener listener;
     private SparseBooleanArray selectedItems;
@@ -129,7 +130,7 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapte
     }
 
 
-    public RecyclerListAdapter(Context context, ArrayList<Item> itemList, MessageAdapterListener listener) {
+    public RecyclerListAdapter(Context context, ArrayList<RecyclerViewItem> itemList, MessageAdapterListener listener) {
         this.context = context;
         sortedList.addAll(itemList);
         this.listener = listener;
@@ -145,13 +146,13 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapte
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, final int position) {
-        final Item item = sortedList.get(position);
+        final RecyclerViewItem item = sortedList.get(position);
         holder.itemName.setText(item.getNome());
         holder.itemCode.setText("Código: " + item.getCodigo());
         holder.itemDate.setText(item.getDia() + "/" + item.getMes() + "/" + item.getAno());
         if(item.getFoto().equals("null.jpg")){
             holder.itemThumbnail.setImageResource( R.drawable.ic_camera);
-        }else holder.itemThumbnail.setImageBitmap(item.createImgThumb());
+        }else holder.itemThumbnail.setImageBitmap(item.createImgBitmap());
 
         // change the row state to activated
         holder.itemView.setActivated(selectedItems.get(position, false));
@@ -266,38 +267,38 @@ public class RecyclerListAdapter extends RecyclerView.Adapter<RecyclerListAdapte
         sortedList.removeItemAt(position);
     }
 
-    public void restoreItem(Item item){
+    public void restoreItem(RecyclerViewItem item){
         sortedList.add(item);
     }
 
-    public void replaceAll(ArrayList<Item> models) {
+    public void replaceAll(ArrayList<RecyclerViewItem> models) {
         sortedList.beginBatchedUpdates();
         sortedList.clear();
         sortedList.addAll(models);
         sortedList.endBatchedUpdates();
     }
 
-    public SortedList<Item> getSortedList() {
+    public SortedList<RecyclerViewItem> getSortedList() {
         return sortedList;
     }
 
-    public SortedList<Item> getSortedListBackup() {
+    public SortedList<RecyclerViewItem> getSortedListBackup() {
         return sortedListBackup;
     }
 
-    public void setSortedListBackup(SortedList<Item> sortedListBackup) {
+    public void setSortedListBackup(SortedList<RecyclerViewItem> sortedListBackup) {
         this.sortedListBackup = sortedListBackup;
     }
 
-    public SortedList<Item> getFilteredItemsByDate() {
+    public SortedList<RecyclerViewItem> getFilteredItemsByDate() {
         return filteredItemsByDate;
     }
 
-    public SortedList<Item> getFilteredItemsByName() {
+    public SortedList<RecyclerViewItem> getFilteredItemsByName() {
         return filteredItemsByName;
     }
 
-    public void setFilteredItemsByName(SortedList<Item> filteredItemsByName) {
+    public void setFilteredItemsByName(SortedList<RecyclerViewItem> filteredItemsByName) {
         this.filteredItemsByName = filteredItemsByName;
     }
 

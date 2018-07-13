@@ -1,7 +1,8 @@
-package br.ufop.ildeir.ubspaces.requests;
+package br.ufop.ildeir.ubspaces.requests.post;
 
+import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -10,48 +11,44 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
+import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.miscellaneous.UbspaceURL;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 
 /**
- * Created by Ildeir on 17/05/2018.
+ * Created by Ildeir on 25/05/2018.
  */
 
-public class LoginRequest extends AsyncTask<String,Void,String> {
+public class PostObjImgRequest extends AsyncTask<Void,Void,String> {
 
-    private String content;
+    private String imgContent;
 
-    public LoginRequest(String content){
-        this.content = content;
+    public PostObjImgRequest(String imgContent, Context context){
+        this.imgContent = imgContent;
     }
 
     @Override
-    protected String doInBackground(String... strings) {
+    protected String doInBackground(Void... voids) {
         try {
-            URL url = new URL(new UbspaceURL().getUrl() + "validateLogin/");
+            URL url = new URL(new UbspaceURL().getUrl() + "uploadImg/");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-type","application/json");
-            conn.setRequestProperty("Authorization", "1gdh87efuhwi");
+            conn.setRequestProperty("Authorization", SessionManager.getInstance().getUserToken());
             conn.setDoOutput(true);
-            conn.setDoInput(true);
-            conn.setUseCaches(false);
             PrintStream printStream = new PrintStream(conn.getOutputStream());
-            printStream.println(content);
+            printStream.println(imgContent);
             conn.connect();
             int responseCode = conn.getResponseCode();
             if(responseCode == 401){
-                Log.e("teste","ENTROU NO IF 401");
                 SessionManager.getInstance().toLoginActivity();
-                return "";
+                return "401";
             }
+            Scanner scanner = new Scanner(conn.getInputStream());
             String result = "";
-            Scanner s = new Scanner(conn.getInputStream());
-            while(s.hasNext()){
-                result = result + s.nextLine();
+            while(scanner.hasNext()){
+                result = result + scanner.nextLine();
             }
-            //String result = "";
-            //String result = new DataInputStream(conn.getInputStream()).readUTF();
             conn.disconnect();
             return result;
         } catch (MalformedURLException e) {

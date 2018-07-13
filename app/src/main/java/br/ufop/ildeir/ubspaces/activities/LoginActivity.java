@@ -19,12 +19,10 @@ import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.objects.Item;
-import br.ufop.ildeir.ubspaces.requests.GetObjDataRequest;
-import br.ufop.ildeir.ubspaces.requests.GetObjDataRequestForComumUser;
-import br.ufop.ildeir.ubspaces.requests.GetObjImgRequest;
-import br.ufop.ildeir.ubspaces.requests.GetObjImgRequestForComumUser;
-import br.ufop.ildeir.ubspaces.requests.GetUserRequest;
-import br.ufop.ildeir.ubspaces.requests.LoginRequest;
+import br.ufop.ildeir.ubspaces.requests.get.GetObjDataRequestForComumUser;
+import br.ufop.ildeir.ubspaces.requests.get.GetObjImgRequestForComumUser;
+import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
+import br.ufop.ildeir.ubspaces.requests.post.LoginRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 import br.ufop.ildeir.ubspaces.singleton.UserSingleton;

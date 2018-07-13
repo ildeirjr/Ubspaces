@@ -1,4 +1,4 @@
-package br.ufop.ildeir.ubspaces.requests;
+package br.ufop.ildeir.ubspaces.requests.get;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -17,13 +17,14 @@ import java.util.Scanner;
 
 import br.ufop.ildeir.ubspaces.miscellaneous.UbspaceURL;
 import br.ufop.ildeir.ubspaces.objects.Item;
+import br.ufop.ildeir.ubspaces.objects.RecyclerViewItem;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 
 /**
  * Created by Ildeir on 05/07/2018.
  */
 
-public class SearchObjByNameRequest extends AsyncTask<String,Void,ArrayList<Item>>{
+public class SearchObjByNameRequest extends AsyncTask<String,Void,ArrayList<RecyclerViewItem>>{
 
 //    private String searchKey;
 //
@@ -32,10 +33,10 @@ public class SearchObjByNameRequest extends AsyncTask<String,Void,ArrayList<Item
 //    }
 
     @Override
-    protected ArrayList<Item> doInBackground(String... strings) {
+    protected ArrayList<RecyclerViewItem> doInBackground(String... strings) {
         try{
-            Item item;
-            ArrayList<Item> objectArrayList = new ArrayList<>();
+            RecyclerViewItem item;
+            ArrayList<RecyclerViewItem> objectArrayList = new ArrayList<>();
             URL url = new URL(new UbspaceURL().getUrl() + "searchName/?substring=" + strings[0]);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -55,7 +56,7 @@ public class SearchObjByNameRequest extends AsyncTask<String,Void,ArrayList<Item
             JSONArray objectJSONArray = new JSONArray(result);
             if(!objectJSONArray.isNull(0)){
                 for(int i=0 ; i<objectJSONArray.length() ; i++){
-                    item = new Item();
+                    item = new RecyclerViewItem();
                     item.JSONtoItem((JSONObject) objectJSONArray.get(i));
                     objectArrayList.add(item);
                     Log.e("if","laço");
