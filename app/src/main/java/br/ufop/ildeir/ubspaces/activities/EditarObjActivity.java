@@ -13,7 +13,9 @@ import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -46,9 +48,23 @@ public class EditarObjActivity extends AppCompatActivity {
     private TextInputLayout etRecebedor;
     private TextInputLayout etNota;
     private ImageView fotoView;
+    private Spinner stateSpinner, unitSpinner;
     private int dia,mes,ano;
     private DateDialog dateDialog;
     private static int IMG_REQUEST = 1;
+    private static String[] STATE_SPINNER_OPTIONS = {"Normal","Excluido","Quebrado","Consertado"};
+    private static String[] UNIT_SPINNER_OPTIONS = {"Centro de Educação Aberta e a Distância (CEAD)",
+            "Centro Desportivo da UFOP (CEDUFOP)",
+            "Escola de Direito, Turismo e Museologia (EDTM)",
+            "Escola de Farmácia",
+            "Escola de Minas",
+            "Escola de Medicina",
+            "Escola de Nutrição",
+            "Instituto de Ciências Exatas e Aplicadas (ICEA)",
+            "Instituto de Ciências Exatas e Biológicas",
+            "Instituto de Ciências Humanas e Sociais (ICHS)",
+            "Instituto de Ciências Sociais Aplicadas (ICSA)",
+            "Instituto de Filosofia, Arte e Cultura (IFAC)"};
     Bitmap img;
     byte[] b;
     private boolean flagDateDialogOpened = false;
@@ -75,6 +91,14 @@ public class EditarObjActivity extends AppCompatActivity {
         etRecebedor = findViewById(R.id.layoutRecebedor);
         etNota = findViewById(R.id.layoutNota);
         fotoView = findViewById(R.id.addImg);
+        stateSpinner = findViewById(R.id.stateSpinner);
+        unitSpinner = findViewById(R.id.unitSpinner);
+
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, STATE_SPINNER_OPTIONS);
+        stateSpinner.setAdapter(spinnerAdapter);
+
+        spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, UNIT_SPINNER_OPTIONS);
+        unitSpinner.setAdapter(spinnerAdapter);
 
         etData.getEditText().setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -124,9 +148,48 @@ public class EditarObjActivity extends AppCompatActivity {
             fotoView.setImageBitmap(img);
             codigoAntigo = itemSingleton.getCodigo();
             fotoAntigo = itemSingleton.getFoto();
+
+            if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[0])){
+                stateSpinner.setSelection(0);
+            } else if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[1])){
+                stateSpinner.setSelection(1);
+            } else if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[2])){
+                stateSpinner.setSelection(2);
+            } else if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[3])){
+                stateSpinner.setSelection(3);
+            }
+
+            if(itemSingleton.getUnidade().equals(UNIT_SPINNER_OPTIONS[0])){
+                unitSpinner.setSelection(0);
+            } else if(itemSingleton.getUnidade().equals(UNIT_SPINNER_OPTIONS[1])) {
+                unitSpinner.setSelection(1);
+            } else if(itemSingleton.getUnidade().equals(UNIT_SPINNER_OPTIONS[2])) {
+                unitSpinner.setSelection(2);
+            } else if(itemSingleton.getUnidade().equals(UNIT_SPINNER_OPTIONS[3])) {
+                unitSpinner.setSelection(3);
+            } else if(itemSingleton.getUnidade().equals(UNIT_SPINNER_OPTIONS[4])) {
+                unitSpinner.setSelection(4);
+            } else if(itemSingleton.getUnidade().equals(UNIT_SPINNER_OPTIONS[5])) {
+                unitSpinner.setSelection(5);
+            } else if(itemSingleton.getUnidade().equals(UNIT_SPINNER_OPTIONS[6])) {
+                unitSpinner.setSelection(6);
+            } else if(itemSingleton.getUnidade().equals(UNIT_SPINNER_OPTIONS[7])) {
+                unitSpinner.setSelection(7);
+            } else if(itemSingleton.getUnidade().equals(UNIT_SPINNER_OPTIONS[8])) {
+                unitSpinner.setSelection(8);
+            } else if(itemSingleton.getUnidade().equals(UNIT_SPINNER_OPTIONS[9])) {
+                unitSpinner.setSelection(9);
+            } else if(itemSingleton.getUnidade().equals(UNIT_SPINNER_OPTIONS[10])) {
+                unitSpinner.setSelection(10);
+            } else if(itemSingleton.getUnidade().equals(UNIT_SPINNER_OPTIONS[11])) {
+                unitSpinner.setSelection(11);
+            }
+
         }
 
         intentIntegrator = new IntentIntegrator(this);
+
+
 
     }
 
@@ -162,6 +225,7 @@ public class EditarObjActivity extends AppCompatActivity {
                     }
                     itemSingleton.setCodigo(etCodigo.getEditText().getText().toString());
                     itemSingleton.setNome(etNome.getEditText().getText().toString());
+                    itemSingleton.setEstado(stateSpinner.getSelectedItem().toString());
                     itemSingleton.setDescricao(etDescricao.getEditText().getText().toString());
                     itemSingleton.setLocal(etLocal.getEditText().getText().toString());
                     itemSingleton.setDepto(etDepto.getEditText().getText().toString());
@@ -170,6 +234,7 @@ public class EditarObjActivity extends AppCompatActivity {
                     itemSingleton.setAno(ano);
                     itemSingleton.setRecebeu(etRecebedor.getEditText().getText().toString());
                     itemSingleton.setNota(etNota.getEditText().getText().toString());
+                    itemSingleton.setUnidade(unitSpinner.getSelectedItem().toString());
                     itemSingleton.setFoto(etNome.getEditText().getText().toString().replaceAll(" ","_") + "_" + etCodigo.getEditText().getText().toString() + ".jpg");
                     itemSingleton.setImg(bmpToByteArray());
                     JSONObject jsonObject = itemSingleton.ItemtoJSON();

@@ -16,6 +16,7 @@ public class Item {
 
     private String codigo;
     private String nome;
+    private String estado;
     private int dia;
     private int mes;
     private int ano;
@@ -24,6 +25,7 @@ public class Item {
     private String recebeu;
     private String depto;
     private String descricao;
+    private String unidade;
     private String foto;
     private byte[] img;
 
@@ -45,6 +47,14 @@ public class Item {
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
     public int getDia() {
@@ -111,6 +121,14 @@ public class Item {
         this.descricao = descricao;
     }
 
+    public String getUnidade() {
+        return unidade;
+    }
+
+    public void setUnidade(String unidade) {
+        this.unidade = unidade;
+    }
+
     public String getFoto() {
         return foto;
     }
@@ -131,6 +149,7 @@ public class Item {
         try {
             setCodigo(jsonItem.getString("codigo"));
             setNome(jsonItem.getString("nome"));
+            setEstado(jsonItem.getString("estado"));
             setDia(Integer.parseInt(jsonItem.getString("dia")));
             setMes(Integer.parseInt(jsonItem.getString("mes")));
             setAno(Integer.parseInt(jsonItem.getString("ano")));
@@ -139,6 +158,7 @@ public class Item {
             setRecebeu(jsonItem.getString("quem_recebeu"));
             setDepto(jsonItem.getString("depto"));
             setDescricao(jsonItem.getString("descricao"));
+            setUnidade(jsonItem.getString("unidade"));
             setFoto(jsonItem.getString("foto"));
         } catch (JSONException e) {
             e.printStackTrace();
@@ -150,6 +170,7 @@ public class Item {
         try {
             jsonItem.put("codigo",getCodigo());
             jsonItem.put("nome",getNome());
+            jsonItem.put("estado",getEstado());
             jsonItem.put("dia",getDia());
             jsonItem.put("mes",getMes());
             jsonItem.put("ano",getAno());
@@ -158,6 +179,7 @@ public class Item {
             jsonItem.put("recebeu",getRecebeu());
             jsonItem.put("depto",getDepto());
             jsonItem.put("descricao",getDescricao());
+            jsonItem.put("unidade",getUnidade());
             jsonItem.put("foto",getFoto());
             return jsonItem;
         } catch (JSONException e) {
@@ -206,11 +228,13 @@ public class Item {
         if (ano != item.ano) return false;
         if (!codigo.equals(item.codigo)) return false;
         if (!nome.equals(item.nome)) return false;
+        if (!estado.equals(item.estado)) return false;
         if (!local.equals(item.local)) return false;
         if (!nota.equals(item.nota)) return false;
         if (!recebeu.equals(item.recebeu)) return false;
         if (!depto.equals(item.depto)) return false;
         if (!descricao.equals(item.descricao)) return false;
+        if (!unidade.equals(item.unidade)) return false;
         if (!foto.equals(item.foto)) return false;
         return Arrays.equals(img, item.img);
     }
@@ -219,6 +243,7 @@ public class Item {
     public int hashCode() {
         int result = codigo.hashCode();
         result = 31 * result + nome.hashCode();
+        result = 31 * result + estado.hashCode();
         result = 31 * result + dia;
         result = 31 * result + mes;
         result = 31 * result + ano;
@@ -227,6 +252,7 @@ public class Item {
         result = 31 * result + recebeu.hashCode();
         result = 31 * result + depto.hashCode();
         result = 31 * result + descricao.hashCode();
+        result = 31 * result + unidade.hashCode();
         result = 31 * result + foto.hashCode();
         result = 31 * result + Arrays.hashCode(img);
         return result;

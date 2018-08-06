@@ -75,6 +75,20 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:text="Estado"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textEstado"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Normal"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:text="Descrição"
                     android:textColor="@color/primaryText"/>
 
@@ -87,16 +101,30 @@
                     android:paddingBottom="@dimen/paddingBottom"/>
 
                 <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Data de entrada"
-                    android:textColor="@color/primaryText"/>
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Data de entrada"
+                android:textColor="@color/primaryText"/>
 
                 <TextView
                     android:id="@+id/textData"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="12/03/2018"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Unidade acadêmica"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textUnidade"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ICEA"
                     android:textColor="@color/secondaryText"
                     android:paddingBottom="@dimen/paddingBottom"/>
 

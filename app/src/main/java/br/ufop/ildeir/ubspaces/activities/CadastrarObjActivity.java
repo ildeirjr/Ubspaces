@@ -16,7 +16,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -49,10 +51,25 @@ public class CadastrarObjActivity extends AppCompatActivity {
     private TextInputLayout etRecebedor;
     private TextInputLayout etNota;
     private ImageView fotoView;
+    private ArrayAdapter<String> spinnerAdapter;
+    private Spinner stateSpinner, unitSpinner;
     private int dia,mes,ano;
     private DateDialog dateDialog;
     private static int IMG_GALLERY = 1;
     private static int IMG_CAMERA = 2;
+    private static String[] STATE_SPINNER_OPTIONS = {"Normal","Excluido","Quebrado","Consertado"};
+    private static String[] UNIT_SPINNER_OPTIONS = {"Centro de Educação Aberta e a Distância (CEAD)",
+                                                    "Centro Desportivo da UFOP (CEDUFOP)",
+                                                    "Escola de Direito, Turismo e Museologia (EDTM)",
+                                                    "Escola de Farmácia",
+                                                    "Escola de Minas",
+                                                    "Escola de Medicina",
+                                                    "Escola de Nutrição",
+                                                    "Instituto de Ciências Exatas e Aplicadas (ICEA)",
+                                                    "Instituto de Ciências Exatas e Biológicas",
+                                                    "Instituto de Ciências Humanas e Sociais (ICHS)",
+                                                    "Instituto de Ciências Sociais Aplicadas (ICSA)",
+                                                    "Instituto de Filosofia, Arte e Cultura (IFAC)"};
     Bitmap img;
     byte[] b;
     boolean imgSeted = false;
@@ -90,6 +107,8 @@ public class CadastrarObjActivity extends AppCompatActivity {
         etRecebedor = findViewById(R.id.layoutRecebedor);
         etNota = findViewById(R.id.layoutNota);
         fotoView = findViewById(R.id.addImg);
+        stateSpinner = findViewById(R.id.stateSpinner);
+        unitSpinner = findViewById(R.id.unitSpinner);
 
         intentIntegrator = new IntentIntegrator(this);
 
@@ -103,6 +122,12 @@ public class CadastrarObjActivity extends AppCompatActivity {
                 }
             }
         });
+
+        spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,STATE_SPINNER_OPTIONS);
+        stateSpinner.setAdapter(spinnerAdapter);
+
+        spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,UNIT_SPINNER_OPTIONS);
+        unitSpinner.setAdapter(spinnerAdapter);
 
     }
 
@@ -136,6 +161,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("codigo",etCodigo.getEditText().getText().toString());
                         jsonObject.put("nome",etNome.getEditText().getText().toString());
+                        jsonObject.put("estado",stateSpinner.getSelectedItem().toString());
                         jsonObject.put("descricao",etDescricao.getEditText().getText().toString());
                         jsonObject.put("local",etLocal.getEditText().getText().toString());
                         jsonObject.put("depto",etDepto.getEditText().getText().toString());
@@ -144,6 +170,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
                         jsonObject.put("ano",ano);
                         jsonObject.put("recebeu",etRecebedor.getEditText().getText().toString());
                         jsonObject.put("nota",etNota.getEditText().getText().toString());
+                        jsonObject.put("unidade",unitSpinner.getSelectedItem().toString());
                         Log.e("imgSeted",String.valueOf(imgSeted));
                         if(imgSeted){
                             JSONObject jsonImg = new JSONObject();

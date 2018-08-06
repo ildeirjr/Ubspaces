@@ -86,6 +86,21 @@
 
                 </android.support.design.widget.TextInputLayout>
 
+                <!--<android.support.design.widget.TextInputLayout-->
+                    <!--android:id="@+id/layoutUnidade"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--app:errorEnabled="true">-->
+
+                    <!--<android.support.design.widget.TextInputEditText-->
+                        <!--android:id="@+id/editUnidade"-->
+                        <!--android:layout_width="match_parent"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:hint="Unidade acadêmica"-->
+                        <!--android:inputType="text"/>-->
+
+                <!--</android.support.design.widget.TextInputLayout>-->
+
                 <android.support.design.widget.TextInputLayout
                     android:id="@+id/layoutLocal"
                     android:layout_width="match_parent"
@@ -161,6 +176,50 @@
                         android:hint="Nota fiscal"/>
 
                 </android.support.design.widget.TextInputLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingBottom="8dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Unidade acadêmica: "
+                        android:layout_weight="3"
+                        android:textSize="18dp"
+                        android:paddingLeft="4dp"/>
+
+                    <Spinner
+                        android:id="@+id/unitSpinner"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"></Spinner>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingBottom="8dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Estado: "
+                        android:layout_weight="3"
+                        android:textSize="18dp"
+                        android:paddingLeft="4dp"/>
+
+                    <Spinner
+                        android:id="@+id/stateSpinner"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"></Spinner>
+
+                </LinearLayout>
 
 
 
