@@ -57,7 +57,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
     private DateDialog dateDialog;
     private static int IMG_GALLERY = 1;
     private static int IMG_CAMERA = 2;
-    private static String[] STATE_SPINNER_OPTIONS = {"Normal","Excluido","Quebrado","Consertado"};
+    private static String[] STATE_SPINNER_OPTIONS = {"Normal","Quebrado","Consertado"};
     private static String[] UNIT_SPINNER_OPTIONS = {"Centro de Educação Aberta e a Distância (CEAD)",
                                                     "Centro Desportivo da UFOP (CEDUFOP)",
                                                     "Escola de Direito, Turismo e Museologia (EDTM)",
@@ -171,6 +171,8 @@ public class CadastrarObjActivity extends AppCompatActivity {
                         jsonObject.put("recebeu",etRecebedor.getEditText().getText().toString());
                         jsonObject.put("nota",etNota.getEditText().getText().toString());
                         jsonObject.put("unidade",unitSpinner.getSelectedItem().toString());
+                        jsonObject.put("nome_usuario",Integer.parseInt(SessionManager.getInstance().getUserId()));
+                        Log.e("user_id",SessionManager.getInstance().getUserId());
                         Log.e("imgSeted",String.valueOf(imgSeted));
                         if(imgSeted){
                             JSONObject jsonImg = new JSONObject();

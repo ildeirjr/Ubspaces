@@ -17,11 +17,15 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.objects.Item;
 import br.ufop.ildeir.ubspaces.requests.ClearUserTokenRequest;
+import br.ufop.ildeir.ubspaces.requests.get.GetMetadataRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetObjDataRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetObjImgRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
@@ -36,6 +40,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     private TextView user;
     private TextView email;
+    private TextView userObjNum;
+    private TextView totalObjNum;
+    private TextView monthObjNum;
 
     private IntentIntegrator intentIntegrator;
 
@@ -59,6 +66,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         UserSingleton.getInstance();
         user.setText(UserSingleton.getInstance().getNome());
         email.setText(UserSingleton.getInstance().getEmail());
+
+        userObjNum = findViewById(R.id.userObjNum);
+        totalObjNum = findViewById(R.id.totalObjNum);
+        monthObjNum = findViewById(R.id.monthObjNum);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -150,6 +161,21 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             dl.closeDrawer(GravityCompat.START);
         }
         super.onResume();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        try {
+            ArrayList<String> dataArray = new GetMetadataRequest().execute(SessionManager.getInstance().getUserId()).get();
+            userObjNum.setText(dataArray.get(0));
+            totalObjNum.setText(dataArray.get(1));
+            monthObjNum.setText(dataArray.get(2));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
