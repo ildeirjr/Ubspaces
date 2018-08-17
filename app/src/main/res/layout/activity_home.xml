@@ -13,16 +13,101 @@
         android:background="@color/greyBg"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_gravity="center"
-            android:text="Ubspaces"
-            android:textSize="40dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="15dp"
+                app:contentPadding="15dp">
+                
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="Objetos cadastrados por você: "/>
+
+                    <TextView
+                        android:id="@+id/userObjNum"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="10"/>
+
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="15dp"
+                app:contentPadding="15dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="Objetos cadastrados no sistema: "/>
+
+                    <TextView
+                        android:id="@+id/totalObjNum"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="10"/>
+
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="15dp"
+                app:contentPadding="15dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="Objetos cadastrados no último mês: "/>
+
+                    <TextView
+                        android:id="@+id/monthObjNum"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="10"/>
+
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+        </LinearLayout>
+
+        <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginBottom="8dp"-->
+            <!--android:layout_marginEnd="8dp"-->
+            <!--android:layout_marginStart="8dp"-->
+            <!--android:layout_marginTop="8dp"-->
+            <!--android:layout_gravity="center"-->
+            <!--android:text="Ubspaces"-->
+            <!--android:textSize="40dp" />-->
 
         <android.support.design.widget.FloatingActionButton
             android:layout_width="wrap_content"

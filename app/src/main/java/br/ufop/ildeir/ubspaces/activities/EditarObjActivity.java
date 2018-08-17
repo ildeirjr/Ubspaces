@@ -10,6 +10,7 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -70,7 +71,7 @@ public class EditarObjActivity extends AppCompatActivity {
     private boolean flagDateDialogOpened = false;
     private String codigoAntigo, fotoAntigo;
     private Item itemSingleton;
-    private boolean imgSeted = false;
+    private boolean imgSeted;
 
     private IntentIntegrator intentIntegrator;
 
@@ -111,6 +112,8 @@ public class EditarObjActivity extends AppCompatActivity {
                 }
             }
         });
+
+        imgSeted = false;
 
 //        Intent it = getIntent();
 //        Bundle bundle = it.getExtras();
@@ -216,6 +219,7 @@ public class EditarObjActivity extends AppCompatActivity {
                         !validarCampo(etRecebedor)){
                     return true;
                 }else {
+                    JSONObject jsonImg = new JSONObject();
                     if(flagDateDialogOpened){
                         if(dateDialog.isFlagDateSeted()){
                             dia = dateDialog.getDia();
@@ -235,30 +239,45 @@ public class EditarObjActivity extends AppCompatActivity {
                     itemSingleton.setRecebeu(etRecebedor.getEditText().getText().toString());
                     itemSingleton.setNota(etNota.getEditText().getText().toString());
                     itemSingleton.setUnidade(unitSpinner.getSelectedItem().toString());
-                    itemSingleton.setFoto(etNome.getEditText().getText().toString().replaceAll(" ","_") + "_" + etCodigo.getEditText().getText().toString() + ".jpg");
-                    itemSingleton.setImg(bmpToByteArray());
-                    JSONObject jsonObject = itemSingleton.ItemtoJSON();
-                    JSONObject jsonImg = new JSONObject();
-                    try {
-                        jsonObject.put("codigoAntigo",codigoAntigo);
-                        jsonObject.put("fotoAntigo",fotoAntigo);
-                        jsonImg.put("nome",itemSingleton.getFoto());
-                        jsonImg.put("img",bmptoString());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                    if(!itemSingleton.getFoto().equals("null.jpg") || imgSeted){
+                        itemSingleton.setFoto(etNome.getEditText().getText().toString().replaceAll(" ", "_") + "_" + etCodigo.getEditText().getText().toString() + ".jpg");
+                        try {
+                            Log.e("teste", "ENTROU NO IMGSETED");
+                            itemSingleton.setImg(bmpToByteArray());
+                            jsonImg.put("nome", itemSingleton.getFoto());
+                            jsonImg.put("img", bmptoString());
+                            createImgThumb();
+                            jsonImg.put("imgThumb", Base64.encodeToString(bmpToByteArray(), Base64.DEFAULT));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                     try {
+                        JSONObject jsonObject = itemSingleton.ItemtoJSON();
+                        jsonObject.put("codigoAntigo",codigoAntigo);
+                        jsonObject.put("fotoAntigo",fotoAntigo);
+                        if(!fotoAntigo.equals(itemSingleton.getFoto())){
+                            jsonObject.put("imgDelete","true");
+                        } else {
+                            jsonObject.put("imgDelete","false");
+                        }
+                        System.out.println(jsonObject.toString());
                         String result = new EditObjDataRequest(jsonObject.toString()).execute().get();
                         if(result.equals("401")){
                             Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_LONG).show();
                             finish();
                         }
+                        if(!fotoAntigo.equals(itemSingleton.getFoto()) || imgSeted){
+                            new PostObjImgRequest(jsonImg.toString(),this).execute();
+                        }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     } catch (ExecutionException e) {
                         e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                    new PostObjImgRequest(jsonImg.toString(),this).execute();
+
                     Intent it = new Intent(this, VisualizarObjActivity.class);
 //                    Bundle bundle = new Bundle();
 //                    bundle.putString("cod", etCodigo.getEditText().getText().toString());
@@ -332,6 +351,10 @@ public class EditarObjActivity extends AppCompatActivity {
         }
         img.compress(Bitmap.CompressFormat.JPEG,50,b_stream);
         return b_stream.toByteArray();
+    }
+
+    public void createImgThumb(){
+        img = Bitmap.createScaledBitmap(img,(int) (img.getWidth()*0.1),(int) (img.getHeight()*0.1),true);
     }
 
     public boolean validarCampo(TextInputLayout til){

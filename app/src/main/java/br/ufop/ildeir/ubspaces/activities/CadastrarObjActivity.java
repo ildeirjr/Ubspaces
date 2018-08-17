@@ -171,6 +171,8 @@ public class CadastrarObjActivity extends AppCompatActivity {
                         jsonObject.put("recebeu",etRecebedor.getEditText().getText().toString());
                         jsonObject.put("nota",etNota.getEditText().getText().toString());
                         jsonObject.put("unidade",unitSpinner.getSelectedItem().toString());
+                        jsonObject.put("nome_usuario",Integer.parseInt(SessionManager.getInstance().getUserId()));
+                        Log.e("user_id",SessionManager.getInstance().getUserId());
                         Log.e("imgSeted",String.valueOf(imgSeted));
                         if(imgSeted){
                             JSONObject jsonImg = new JSONObject();
