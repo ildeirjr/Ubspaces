@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -52,7 +53,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
     private TextInputLayout etNota;
     private ImageView fotoView;
     private ArrayAdapter<String> spinnerAdapter;
-    private Spinner stateSpinner, unitSpinner;
+    private Spinner stateSpinner, unitSpinner, deptSpinner;
     private int dia,mes,ano;
     private DateDialog dateDialog;
     private static int IMG_GALLERY = 1;
@@ -70,6 +71,59 @@ public class CadastrarObjActivity extends AppCompatActivity {
                                                     "Instituto de Ciências Humanas e Sociais (ICHS)",
                                                     "Instituto de Ciências Sociais Aplicadas (ICSA)",
                                                     "Instituto de Filosofia, Arte e Cultura (IFAC)"};
+
+    private static String[] DEPT_ICEA_OPTIONS = {"DECEA - Departamento de Ciências Exatas e Aplicadas",
+                                                 "DECSI - Departamento de Computação e Sistemas",
+                                                 "DEELT - Departamento de Engenharia Elétrica",
+                                                 "DEENP - Departamento de Engenharia de Produção"};
+
+    private static String[] DEPT_ICSA_OPTIONS = {"DECEG - Departamento de Ciências Econômicas e Gerenciais",
+                                                 "DECSO - Departamento de Ciências Sociais, Jornalismo e Serviço Social"};
+
+    private static String[] DEPT_ICHS_OPTIONS = {"DEEDU - Departamento de Educação",
+                                                 "DEHIS - Departamento de História",
+                                                 "DELET - Departamento de Letras"};
+
+    private static String[] DEPT_IFAC_OPTIONS = {"DEART - Departamento de Artes",
+                                                 "DEFIL - Departamento de Filosofia",
+                                                 "DEMUS - Departamento de Música"};
+
+    private static String[] DEPT_ICEB_OPTIONS = {"DEBIO - Departamento de Biodiversidade, Evolução e Meio Ambiente",
+                                                 "DECBI - Departamento de Ciências Biológicas",
+                                                 "DECOM - Departamento de Computação",
+                                                 "DEEMA - Departamento de Educação Matemática",
+                                                 "DEEST - Departamento de Estatística",
+                                                 "DEFIS - Departamento de Física",
+                                                 "DEMAT - Departamento de Matemática",
+                                                 "DEQUI - Departamento de Química"};
+
+    private static String[] DEPT_NUTRICAO_OPTIONS = {" "};
+
+    private static String[] DEPT_MEDICINA_OPTIONS = {"DECGP - Departamento de Cirurgia, Ginecologia e Obstetrícia e Propedêutica",
+                                                     "DECPA - Departamento de Clínica Pediátrica e do Adulto",
+                                                     "DEMSC - Departamento de Medicina de Família, Saúde Mental e Saúde Coletiva"};
+
+    private static String[] DEPT_MINAS_OPTIONS = {"DEAMB - Departamento de Engenharia Ambiental",
+                                                  "DEARQ - Departamento de Arquitetura e Urbanismo",
+                                                  "DECAT - Departamento do Curso de Engenharia de Controle e Automação e Técnicas Fundamentais",
+                                                  "DEMEC - Departamento do Curso de Engenharia Mecânica",
+                                                  "DECIV - Departamento de Engenharia Civil",
+                                                  "DEGEO - Departamento de Geologia",
+                                                  "DEMET - Departamento de Engenharia Metalúrgica e de Materiais",
+                                                  "DEMIN - Departamento de Engenharia de Minas",
+                                                  "DEPRO - Departamento de Engenharia de Produção",
+                                                  "DEURB - Departamento de Engenharia Urbana"};
+
+    private static String[] DEPT_FARMACIA_OPTIONS = {"Departamento de Análises Clínicas",
+                                                     "Departamento de Farmácia"};
+
+    private static String[] DEPT_EDTM_OPTIONS = {" "};
+
+    private static String[] DEPT_CEDUFOP_OPTIONS = {" "};
+
+    private static String[] DEPT_CEAD_OPTIONS = {"DEETE - Departamento de Educação e Tecnologias",
+                                                 "DEGEP - Departamento de Gestão Pública"};
+
     Bitmap img;
     byte[] b;
     boolean imgSeted = false;
@@ -102,13 +156,14 @@ public class CadastrarObjActivity extends AppCompatActivity {
         etNome = findViewById(R.id.layoutNome);
         etDescricao = findViewById(R.id.layoutDescricao);
         etLocal = findViewById(R.id.layoutLocal);
-        etDepto = findViewById(R.id.layoutDepto);
+        //etDepto = findViewById(R.id.layoutDepto);
         etData = findViewById(R.id.layoutData);
         etRecebedor = findViewById(R.id.layoutRecebedor);
         etNota = findViewById(R.id.layoutNota);
         fotoView = findViewById(R.id.addImg);
         stateSpinner = findViewById(R.id.stateSpinner);
         unitSpinner = findViewById(R.id.unitSpinner);
+        deptSpinner = findViewById(R.id.deptSpinner);
 
         intentIntegrator = new IntentIntegrator(this);
 
@@ -128,7 +183,47 @@ public class CadastrarObjActivity extends AppCompatActivity {
 
         spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,UNIT_SPINNER_OPTIONS);
         unitSpinner.setAdapter(spinnerAdapter);
+        unitSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[0])){
+                    initDeptSpinner(DEPT_CEAD_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[1])){
+                    initDeptSpinner(DEPT_CEDUFOP_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[2])){
+                    initDeptSpinner(DEPT_EDTM_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[3])){
+                    initDeptSpinner(DEPT_FARMACIA_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[4])){
+                    initDeptSpinner(DEPT_MINAS_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[5])){
+                    initDeptSpinner(DEPT_MEDICINA_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[6])){
+                    initDeptSpinner(DEPT_NUTRICAO_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[7])){
+                    initDeptSpinner(DEPT_ICEA_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[8])){
+                    initDeptSpinner(DEPT_ICEB_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[9])){
+                    initDeptSpinner(DEPT_ICHS_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[10])){
+                    initDeptSpinner(DEPT_ICSA_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[11])){
+                    initDeptSpinner(DEPT_IFAC_OPTIONS);
+                }
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+    }
+
+    private void initDeptSpinner(String[] depts){
+        ArrayAdapter<String> adapterDeptSpinner = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,depts);
+        deptSpinner.setAdapter(adapterDeptSpinner);
     }
 
     @Override
@@ -149,7 +244,6 @@ public class CadastrarObjActivity extends AppCompatActivity {
                    !validarCampo(etNome)|
                    !validarCampo(etLocal)|
                    !validarCampo(etData)|
-                   !validarCampo(etDepto)|
                    !validarCampo(etNota)|
                    !validarCampo(etRecebedor)){
                     return true;
@@ -164,7 +258,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
                         jsonObject.put("estado",stateSpinner.getSelectedItem().toString());
                         jsonObject.put("descricao",etDescricao.getEditText().getText().toString());
                         jsonObject.put("local",etLocal.getEditText().getText().toString());
-                        jsonObject.put("depto",etDepto.getEditText().getText().toString());
+                        jsonObject.put("depto",deptSpinner.getSelectedItem().toString());
                         jsonObject.put("dia",dia);
                         jsonObject.put("mes",mes);
                         jsonObject.put("ano",ano);

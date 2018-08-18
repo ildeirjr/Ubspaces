@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -49,7 +50,7 @@ public class EditarObjActivity extends AppCompatActivity {
     private TextInputLayout etRecebedor;
     private TextInputLayout etNota;
     private ImageView fotoView;
-    private Spinner stateSpinner, unitSpinner;
+    private Spinner stateSpinner, unitSpinner, deptSpinner;
     private int dia,mes,ano;
     private DateDialog dateDialog;
     private static int IMG_REQUEST = 1;
@@ -66,6 +67,59 @@ public class EditarObjActivity extends AppCompatActivity {
             "Instituto de Ciências Humanas e Sociais (ICHS)",
             "Instituto de Ciências Sociais Aplicadas (ICSA)",
             "Instituto de Filosofia, Arte e Cultura (IFAC)"};
+
+    private static String[] DEPT_ICEA_OPTIONS = {"DECEA - Departamento de Ciências Exatas e Aplicadas",
+            "DECSI - Departamento de Computação e Sistemas",
+            "DEELT - Departamento de Engenharia Elétrica",
+            "DEENP - Departamento de Engenharia de Produção"};
+
+    private static String[] DEPT_ICSA_OPTIONS = {"DECEG - Departamento de Ciências Econômicas e Gerenciais",
+            "DECSO - Departamento de Ciências Sociais, Jornalismo e Serviço Social"};
+
+    private static String[] DEPT_ICHS_OPTIONS = {"DEEDU - Departamento de Educação",
+            "DEHIS - Departamento de História",
+            "DELET - Departamento de Letras"};
+
+    private static String[] DEPT_IFAC_OPTIONS = {"DEART - Departamento de Artes",
+            "DEFIL - Departamento de Filosofia",
+            "DEMUS - Departamento de Música"};
+
+    private static String[] DEPT_ICEB_OPTIONS = {"DEBIO - Departamento de Biodiversidade, Evolução e Meio Ambiente",
+            "DECBI - Departamento de Ciências Biológicas",
+            "DECOM - Departamento de Computação",
+            "DEEMA - Departamento de Educação Matemática",
+            "DEEST - Departamento de Estatística",
+            "DEFIS - Departamento de Física",
+            "DEMAT - Departamento de Matemática",
+            "DEQUI - Departamento de Química"};
+
+    private static String[] DEPT_NUTRICAO_OPTIONS = {" "};
+
+    private static String[] DEPT_MEDICINA_OPTIONS = {"DECGP - Departamento de Cirurgia, Ginecologia e Obstetrícia e Propedêutica",
+            "DECPA - Departamento de Clínica Pediátrica e do Adulto",
+            "DEMSC - Departamento de Medicina de Família, Saúde Mental e Saúde Coletiva"};
+
+    private static String[] DEPT_MINAS_OPTIONS = {"DEAMB - Departamento de Engenharia Ambiental",
+            "DEARQ - Departamento de Arquitetura e Urbanismo",
+            "DECAT - Departamento do Curso de Engenharia de Controle e Automação e Técnicas Fundamentais",
+            "DEMEC - Departamento do Curso de Engenharia Mecânica",
+            "DECIV - Departamento de Engenharia Civil",
+            "DEGEO - Departamento de Geologia",
+            "DEMET - Departamento de Engenharia Metalúrgica e de Materiais",
+            "DEMIN - Departamento de Engenharia de Minas",
+            "DEPRO - Departamento de Engenharia de Produção",
+            "DEURB - Departamento de Engenharia Urbana"};
+
+    private static String[] DEPT_FARMACIA_OPTIONS = {"Departamento de Análises Clínicas",
+            "Departamento de Farmácia"};
+
+    private static String[] DEPT_EDTM_OPTIONS = {" "};
+
+    private static String[] DEPT_CEDUFOP_OPTIONS = {" "};
+
+    private static String[] DEPT_CEAD_OPTIONS = {"DEETE - Departamento de Educação e Tecnologias",
+            "DEGEP - Departamento de Gestão Pública"};
+
     Bitmap img;
     byte[] b;
     private boolean flagDateDialogOpened = false;
@@ -87,19 +141,55 @@ public class EditarObjActivity extends AppCompatActivity {
         etNome = findViewById(R.id.layoutNome);
         etDescricao = findViewById(R.id.layoutDescricao);
         etLocal = findViewById(R.id.layoutLocal);
-        etDepto = findViewById(R.id.layoutDepto);
+        //etDepto = findViewById(R.id.layoutDepto);
         etData = findViewById(R.id.layoutData);
         etRecebedor = findViewById(R.id.layoutRecebedor);
         etNota = findViewById(R.id.layoutNota);
         fotoView = findViewById(R.id.addImg);
         stateSpinner = findViewById(R.id.stateSpinner);
         unitSpinner = findViewById(R.id.unitSpinner);
+        deptSpinner = findViewById(R.id.deptSpinnerEdit);
 
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, STATE_SPINNER_OPTIONS);
         stateSpinner.setAdapter(spinnerAdapter);
 
         spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, UNIT_SPINNER_OPTIONS);
         unitSpinner.setAdapter(spinnerAdapter);
+        unitSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[0])){
+                    initDeptSpinner(itemSingleton.getDepto(), DEPT_CEAD_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[1])){
+                    initDeptSpinner(itemSingleton.getDepto(), DEPT_CEDUFOP_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[2])){
+                    initDeptSpinner(itemSingleton.getDepto(), DEPT_EDTM_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[3])){
+                    initDeptSpinner(itemSingleton.getDepto(), DEPT_FARMACIA_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[4])){
+                    initDeptSpinner(itemSingleton.getDepto(), DEPT_MINAS_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[5])){
+                    initDeptSpinner(itemSingleton.getDepto(), DEPT_MEDICINA_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[6])){
+                    initDeptSpinner(itemSingleton.getDepto(), DEPT_NUTRICAO_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[7])){
+                    initDeptSpinner(itemSingleton.getDepto(), DEPT_ICEA_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[8])){
+                    initDeptSpinner(itemSingleton.getDepto(), DEPT_ICEB_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[9])){
+                    initDeptSpinner(itemSingleton.getDepto(), DEPT_ICHS_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[10])){
+                    initDeptSpinner(itemSingleton.getDepto(), DEPT_ICSA_OPTIONS);
+                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[11])){
+                    initDeptSpinner(itemSingleton.getDepto(), DEPT_IFAC_OPTIONS);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
         etData.getEditText().setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -143,7 +233,7 @@ public class EditarObjActivity extends AppCompatActivity {
             etNome.getEditText().setText(itemSingleton.getNome());
             etDescricao.getEditText().setText(itemSingleton.getDescricao());
             etLocal.getEditText().setText(itemSingleton.getLocal());
-            etDepto.getEditText().setText(itemSingleton.getDepto());
+            //etDepto.getEditText().setText(itemSingleton.getDepto());
             etData.getEditText().setText(dia + "/" + mes + "/" + ano);
             etRecebedor.getEditText().setText(itemSingleton.getRecebeu());
             etNota.getEditText().setText(itemSingleton.getNota());
@@ -152,15 +242,22 @@ public class EditarObjActivity extends AppCompatActivity {
             codigoAntigo = itemSingleton.getCodigo();
             fotoAntigo = itemSingleton.getFoto();
 
-            if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[0])){
-                stateSpinner.setSelection(0);
-            } else if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[1])){
-                stateSpinner.setSelection(1);
-            } else if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[2])){
-                stateSpinner.setSelection(2);
-            } else if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[3])){
-                stateSpinner.setSelection(3);
+            for(int i=0 ; i<STATE_SPINNER_OPTIONS.length ; i++){
+                if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[i])){
+                    stateSpinner.setSelection(i);
+                    break;
+                }
             }
+
+//            if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[0])){
+//                stateSpinner.setSelection(0);
+//            } else if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[1])){
+//                stateSpinner.setSelection(1);
+//            } else if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[2])){
+//                stateSpinner.setSelection(2);
+//            } else if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[3])){
+//                stateSpinner.setSelection(3);
+//            }
 
             if(itemSingleton.getUnidade().equals(UNIT_SPINNER_OPTIONS[0])){
                 unitSpinner.setSelection(0);
@@ -196,6 +293,22 @@ public class EditarObjActivity extends AppCompatActivity {
 
     }
 
+    private void initDeptSpinner(String dept, String[] depts){
+        ArrayAdapter<String> adapterSpinner = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, depts);
+        deptSpinner.setAdapter(adapterSpinner);
+        for(int i=0 ; i<depts.length ; i++){
+            if(dept.equals(depts[i])){
+                deptSpinner.setSelection(i);
+                break;
+            }
+        }
+    }
+
+    private void onSelectDeptSpinner(String[] depts){
+        ArrayAdapter<String> adapterSpinner = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, depts);
+        deptSpinner.setAdapter(adapterSpinner);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_cadastrar_obj,menu);
@@ -214,7 +327,6 @@ public class EditarObjActivity extends AppCompatActivity {
                         !validarCampo(etNome)|
                         !validarCampo(etLocal)|
                         !validarCampo(etData)|
-                        !validarCampo(etDepto)|
                         !validarCampo(etNota)|
                         !validarCampo(etRecebedor)){
                     return true;
@@ -232,7 +344,7 @@ public class EditarObjActivity extends AppCompatActivity {
                     itemSingleton.setEstado(stateSpinner.getSelectedItem().toString());
                     itemSingleton.setDescricao(etDescricao.getEditText().getText().toString());
                     itemSingleton.setLocal(etLocal.getEditText().getText().toString());
-                    itemSingleton.setDepto(etDepto.getEditText().getText().toString());
+                    itemSingleton.setDepto(deptSpinner.getSelectedItem().toString());
                     itemSingleton.setDia(dia);
                     itemSingleton.setMes(mes);
                     itemSingleton.setAno(ano);
