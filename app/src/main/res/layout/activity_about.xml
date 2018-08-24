@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="br.ufop.ildeir.ubspaces.activities.AboutActivity"
+    android:backgroundTint="@color/greyBg"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_weight="1">
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/logo_ufop_lq"
+            android:drawingCacheQuality="low"/>
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/logo_imobilis"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:padding="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Este aplicativo foi desenvolvido como requisito do Trabalho de Conclusão de Curso de Engenharia de Computação da Universidade Federal de Ouro Preto (UFOP), no Instituto de Ciências Exatas e Aplicadas (ICEA), João Monlevade - MG, em parceria com o Laboratório iMobilis - JM"
+        android:gravity="center"
+        android:layout_weight="1"/>
+
+
+
+</LinearLayout>

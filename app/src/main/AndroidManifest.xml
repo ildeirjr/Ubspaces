@@ -41,13 +41,13 @@
         <activity android:name=".activities.ObjNotFoundActivity" />
         <activity android:name=".activities.ScanActivity" />
         <activity android:name=".activities.ListObjActivity">
-
             <meta-data
                 android:name="android.app.searchable"
-                android:resource="@xml/searchable"/>
-
+                android:resource="@xml/searchable" />
         </activity>
-        <activity android:name=".activities.VisualizeObjActivity"/>
+        <activity android:name=".activities.VisualizeObjActivity" />
+        <activity android:name=".activities.DeletedObjListActivity" />
+        <activity android:name=".activities.AboutActivity"></activity>
     </application>
 
 </manifest>

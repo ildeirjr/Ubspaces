@@ -93,6 +93,14 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         startActivity(new Intent(this,ListObjActivity.class));
     }
 
+    public void listaExcluidos(){
+        startActivity(new Intent(this, DeletedObjListActivity.class));
+    }
+
+    public void exibeSobre(){
+        startActivity(new Intent(this, AboutActivity.class));
+    }
+
 
     public void logOut() {
         try {
@@ -202,6 +210,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.sair:
                 logOut();
+                break;
+            case R.id.listarExcluidos:
+                listaExcluidos();
+                break;
+            case R.id.sobre:
+                exibeSobre();
                 break;
             default:
                 break;

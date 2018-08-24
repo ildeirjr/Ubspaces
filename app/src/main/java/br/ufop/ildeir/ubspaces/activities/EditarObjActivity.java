@@ -54,7 +54,7 @@ public class EditarObjActivity extends AppCompatActivity {
     private int dia,mes,ano;
     private DateDialog dateDialog;
     private static int IMG_REQUEST = 1;
-    private static String[] STATE_SPINNER_OPTIONS = {"Normal","Excluido","Quebrado","Consertado"};
+    private static String[] STATE_SPINNER_OPTIONS = {"Normal","Quebrado","Consertado"};
     private static String[] UNIT_SPINNER_OPTIONS = {"Centro de Educação Aberta e a Distância (CEAD)",
             "Centro Desportivo da UFOP (CEDUFOP)",
             "Escola de Direito, Turismo e Museologia (EDTM)",

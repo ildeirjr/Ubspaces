@@ -37,7 +37,7 @@ public class SearchObjByNameRequest extends AsyncTask<String,Void,ArrayList<Recy
         try{
             RecyclerViewItem item;
             ArrayList<RecyclerViewItem> objectArrayList = new ArrayList<>();
-            URL url = new URL(new UbspaceURL().getUrl() + "searchName/?substring=" + strings[0]);
+            URL url = new URL(new UbspaceURL().getUrl() + "searchName/?substring=" + strings[0] + "&mode=" + strings[1]);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Authorization", SessionManager.getInstance().getUserToken());

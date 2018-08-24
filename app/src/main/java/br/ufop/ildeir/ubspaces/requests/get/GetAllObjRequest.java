@@ -36,7 +36,7 @@ public class GetAllObjRequest extends AsyncTask<String,Void,ArrayList<RecyclerVi
         try {
             RecyclerViewItem item;
             ArrayList<RecyclerViewItem> objectArrayList = new ArrayList<>();
-            URL url = new URL(new UbspaceURL().getUrl() + "listall/");
+            URL url = new URL(new UbspaceURL().getUrl() + "listall/?mode=" + strings[0]);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Authorization", SessionManager.getInstance().getUserToken());

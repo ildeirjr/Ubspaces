@@ -37,7 +37,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.R;
+import br.ufop.ildeir.ubspaces.adapters.DeletedRecyclerListAdapter;
 import br.ufop.ildeir.ubspaces.adapters.RecyclerListAdapter;
+import br.ufop.ildeir.ubspaces.miscellaneous.DeletedRecyclerItemTouchHelper;
 import br.ufop.ildeir.ubspaces.miscellaneous.RecyclerItemTouchHelper;
 import br.ufop.ildeir.ubspaces.miscellaneous.WrapContentLinearLayoutManager;
 import br.ufop.ildeir.ubspaces.objects.Item;
@@ -46,19 +48,19 @@ import br.ufop.ildeir.ubspaces.requests.delete.DeleteObjRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetAllObjRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetObjDataRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetObjImgRequest;
-import br.ufop.ildeir.ubspaces.requests.get.GetObjThumbRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
 import br.ufop.ildeir.ubspaces.requests.get.SearchObjByNameRequest;
+import br.ufop.ildeir.ubspaces.requests.post.RestoreObjRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 import br.ufop.ildeir.ubspaces.singleton.ObjectListSingleton;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 
-public class ListObjActivity extends AppCompatActivity implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener, android.support.v7.widget.SearchView.OnQueryTextListener, SearchView.OnCloseListener, RecyclerListAdapter.MessageAdapterListener {
+public class DeletedObjListActivity extends AppCompatActivity implements DeletedRecyclerItemTouchHelper.RecyclerItemTouchHelperListener, android.support.v7.widget.SearchView.OnQueryTextListener, SearchView.OnCloseListener, RecyclerListAdapter.MessageAdapterListener {
 
     private RecyclerView recyclerView;
-    private RecyclerListAdapter recyclerListAdapter;
+    private DeletedRecyclerListAdapter recyclerListAdapter;
     private CoordinatorLayout coordinatorLayout;
-    private ArrayList<RecyclerViewItem> deletedItems;
+    private ArrayList<RecyclerViewItem> restoredItems;
     private ActionModeCallback actionModeCallback;
     private ActionMode actionMode;
     private int statusBarColor;
@@ -76,11 +78,11 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_list_obj);
+        setContentView(R.layout.activity_deleted_obj_list);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setTitle("Objetos cadastrados");
+        getSupportActionBar().setTitle("Objetos excluídos");
 
         coordinatorLayout = findViewById(R.id.coordinator_layout);
         recyclerView = findViewById(R.id.recycler_view);
@@ -89,10 +91,10 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
 
-        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT,this);
+        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new DeletedRecyclerItemTouchHelper(0, ItemTouchHelper.LEFT,this);
         new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
 
-        deletedItems = new ArrayList<>();
+        restoredItems = new ArrayList<>();
 
         actionModeCallback = new ActionModeCallback();
 
@@ -142,14 +144,14 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
     protected void onResume() {
         super.onResume();
         try {
-            ArrayList<RecyclerViewItem> itemsArrayList = new GetAllObjRequest().execute("non_deleted").get();
+            ArrayList<RecyclerViewItem> itemsArrayList = new GetAllObjRequest().execute("deleted").get();
             if(itemsArrayList != null) {
                 Log.e("tamanho do array", String.valueOf(itemsArrayList.size()));
                 for (int i = 0; i < itemsArrayList.size(); i++) {
                     itemsArrayList.get(i).setImg(new GetObjImgRequest(itemsArrayList.get(i).getFoto()).execute().get());
                 }
                 ObjectListSingleton.getInstance().setObjectList(itemsArrayList);
-                recyclerListAdapter = new RecyclerListAdapter(this, ObjectListSingleton.getInstance().getObjectList(), this);
+                recyclerListAdapter = new DeletedRecyclerListAdapter(this, ObjectListSingleton.getInstance().getObjectList(), this);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
                 recyclerView.setAdapter(recyclerListAdapter);
 
@@ -184,8 +186,8 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                 SessionManager.getInstance().toLoginActivity();
                 finish();
             } else {
-                for (int i = 0; i < deletedItems.size(); i++) {
-                    new DeleteObjRequest(deletedItems.get(i).getCodigo(), deletedItems.get(i).getFoto()).execute();
+                for (int i = 0; i < restoredItems.size(); i++) {
+                    new RestoreObjRequest().execute(restoredItems.get(i).getCodigo());
                 }
             }
         } catch (InterruptedException e) {
@@ -197,7 +199,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
 
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
-        if(viewHolder instanceof RecyclerListAdapter.MyViewHolder){
+        if(viewHolder instanceof DeletedRecyclerListAdapter.MyViewHolder){
             SortedList<RecyclerViewItem> itemList = recyclerListAdapter.getSortedList();
 
             //get the removed item name to display it in snack bar
@@ -208,16 +210,16 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
 
             //remove the item from recycler view
             recyclerListAdapter.removeItem(viewHolder.getAdapterPosition());
-            deletedItems.add(deletedItem);
+            restoredItems.add(deletedItem);
 
             //showing snack bar with Undo option
-            Snackbar snackbar = Snackbar.make(coordinatorLayout, name + " removido da lista", Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(coordinatorLayout, "Este objeto foi restaurado.", Snackbar.LENGTH_LONG);
             snackbar.setAction("DESFAZER", new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     //restore the deleted item
                     recyclerListAdapter.restoreItem(deletedItem);
-                    deletedItems.remove(deletedItems.size()-1);
+                    restoredItems.remove(restoredItems.size()-1);
                 }
             });
             snackbar.show();
@@ -227,7 +229,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
     @Override
     public boolean onQueryTextSubmit(String query) {
         try {
-            final ArrayList<RecyclerViewItem> filteredModelList = new SearchObjByNameRequest().execute(query,"non_deleted").get();
+            final ArrayList<RecyclerViewItem> filteredModelList = new SearchObjByNameRequest().execute(query,"deleted").get();
             if(filteredModelList != null){
                 for (int i=0 ; i<filteredModelList.size() ; i++){
                     filteredModelList.get(i).setImg(new GetObjImgRequest(filteredModelList.get(i).getFoto()).execute().get());
@@ -291,7 +293,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                 Item item = new GetObjDataRequest(recyclerListAdapter.getSortedList().get(position).getCodigo(),this).execute().get();
                 item.setImg(new GetObjImgRequest(recyclerListAdapter.getSortedList().get(position).getFoto()).execute().get());
                 ItemSingleton.getInstance().setItemSingleton(item);
-                startActivity(new Intent(this,VisualizarObjActivity.class));
+                startActivity(new Intent(this,VisualizeObjActivity.class));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {
@@ -343,7 +345,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
     private class ActionModeCallback implements ActionMode.Callback {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            mode.getMenuInflater().inflate(R.menu.menu_action_mode, menu);
+            mode.getMenuInflater().inflate(R.menu.menu_action_mode_deleted, menu);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 statusBarColor = getWindow().getStatusBarColor();
                 getWindow().setStatusBarColor(getResources().getColor(R.color.bg_action_mode_statusbar));
@@ -359,7 +361,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
-                case R.id.action_delete:
+                case R.id.action_restore:
                     deleteItems();
                     mode.finish();
                     return true;
@@ -388,28 +390,28 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
 
     // deleting the messages from recycler view
     private void deleteItems() {
-            recyclerListAdapter.resetAnimationIndex();
-            List<Integer> selectedItemPositions =
-                    recyclerListAdapter.getSelectedItems();
-            for (int i = selectedItemPositions.size() - 1; i >= 0; i--) {
-                deletedItems.add(recyclerListAdapter.getSortedList().get(selectedItemPositions.get(i)));
-                recyclerListAdapter.removeItem(selectedItemPositions.get(i));
-            }
-
-            Snackbar snackbar = Snackbar.make(coordinatorLayout, selectedItemPositions.size() + " itens removidos.", Snackbar.LENGTH_LONG);
-            snackbar.setAction("DESFAZER", new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    for (RecyclerViewItem item : deletedItems) {
-                        recyclerListAdapter.restoreItem(item);
-                    }
-                    deletedItems.clear();
-                }
-            });
-            snackbar.show();
-
-            recyclerListAdapter.notifyDataSetChanged();
+        recyclerListAdapter.resetAnimationIndex();
+        List<Integer> selectedItemPositions =
+                recyclerListAdapter.getSelectedItems();
+        for (int i = selectedItemPositions.size() - 1; i >= 0; i--) {
+            restoredItems.add(recyclerListAdapter.getSortedList().get(selectedItemPositions.get(i)));
+            recyclerListAdapter.removeItem(selectedItemPositions.get(i));
         }
+
+        Snackbar snackbar = Snackbar.make(coordinatorLayout, selectedItemPositions.size() + " itens restaurados.", Snackbar.LENGTH_LONG);
+        snackbar.setAction("DESFAZER", new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                for (RecyclerViewItem item : restoredItems) {
+                    recyclerListAdapter.restoreItem(item);
+                }
+                restoredItems.clear();
+            }
+        });
+        snackbar.show();
+
+        recyclerListAdapter.notifyDataSetChanged();
+    }
 
     public void filterDate(View view) {
         if (!isFabSeted) {
@@ -507,6 +509,4 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
             isFabSeted = false;
         }
     }
-
-
 }
