@@ -52,6 +52,7 @@ import br.ufop.ildeir.ubspaces.requests.get.SearchObjByNameRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 import br.ufop.ildeir.ubspaces.singleton.ObjectListSingleton;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
+import br.ufop.ildeir.ubspaces.singleton.UserSingleton;
 
 public class ListObjActivity extends AppCompatActivity implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener, android.support.v7.widget.SearchView.OnQueryTextListener, SearchView.OnCloseListener, RecyclerListAdapter.MessageAdapterListener {
 
@@ -184,8 +185,9 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                 SessionManager.getInstance().toLoginActivity();
                 finish();
             } else {
+                String deleteOperator = UserSingleton.getInstance().getNome();
                 for (int i = 0; i < deletedItems.size(); i++) {
-                    new DeleteObjRequest(deletedItems.get(i).getCodigo(), deletedItems.get(i).getFoto()).execute();
+                    new DeleteObjRequest().execute(deletedItems.get(i).getCodigo(), deletedItems.get(i).getFoto(), deleteOperator);
                 }
             }
         } catch (InterruptedException e) {

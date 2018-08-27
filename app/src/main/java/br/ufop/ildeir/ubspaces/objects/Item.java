@@ -27,6 +27,8 @@ public class Item {
     private String descricao;
     private String unidade;
     private String foto;
+    private String nomeUsrExclusao;
+    private String dataExclusao;
     private byte[] img;
 
 //    public Item(String codigo){
@@ -137,6 +139,22 @@ public class Item {
         this.foto = foto;
     }
 
+    public String getNomeUsrExclusao() {
+        return nomeUsrExclusao;
+    }
+
+    public void setNomeUsrExclusao(String nomeUsrExclusao) {
+        this.nomeUsrExclusao = nomeUsrExclusao;
+    }
+
+    public String getDataExclusao() {
+        return dataExclusao;
+    }
+
+    public void setDataExclusao(String dataExclusao) {
+        this.dataExclusao = dataExclusao;
+    }
+
     public byte[] getImg() {
         return img;
     }
@@ -160,6 +178,8 @@ public class Item {
             setDescricao(jsonItem.getString("descricao"));
             setUnidade(jsonItem.getString("unidade"));
             setFoto(jsonItem.getString("foto"));
+            setNomeUsrExclusao(jsonItem.getString("op_exclusao_id"));
+            setDataExclusao(jsonItem.getString("tempo_exclusao"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -181,6 +201,8 @@ public class Item {
             jsonItem.put("descricao",getDescricao());
             jsonItem.put("unidade",getUnidade());
             jsonItem.put("foto",getFoto());
+            jsonItem.put("op_exclusao_id",getNomeUsrExclusao());
+            jsonItem.put("tempo_exclusao",getDataExclusao());
             return jsonItem;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -236,6 +258,8 @@ public class Item {
         if (!descricao.equals(item.descricao)) return false;
         if (!unidade.equals(item.unidade)) return false;
         if (!foto.equals(item.foto)) return false;
+        if (!nomeUsrExclusao.equals(item.nomeUsrExclusao)) return false;
+        if (!dataExclusao.equals(item.dataExclusao)) return false;
         return Arrays.equals(img, item.img);
     }
 
@@ -254,6 +278,8 @@ public class Item {
         result = 31 * result + descricao.hashCode();
         result = 31 * result + unidade.hashCode();
         result = 31 * result + foto.hashCode();
+        result = 31 * result + nomeUsrExclusao.hashCode();
+        result = 31 * result + dataExclusao.hashCode();
         result = 31 * result + Arrays.hashCode(img);
         return result;
     }

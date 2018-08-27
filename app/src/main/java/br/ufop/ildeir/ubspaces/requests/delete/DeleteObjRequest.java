@@ -23,19 +23,13 @@ import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 
 public class DeleteObjRequest extends AsyncTask<String,Void,String> {
 
-    private String itemCode;
-    private String itemImgPath;
 
-    public DeleteObjRequest(String itemCode, String itemImgPath) {
-        this.itemCode = itemCode;
-        this.itemImgPath = itemImgPath;
-    }
 
     @Override
     protected String doInBackground(String... strings) {
         URL url = null;
         try {
-            url = new URL(new UbspaceURL().getUrl() + "delete/?id="+itemCode+"&foto="+itemImgPath);
+            url = new URL(new UbspaceURL().getUrl() + "delete/?id="+strings[0]+"&foto="+strings[1]+"&delete_user="+strings[2]);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("DELETE");
             conn.setRequestProperty("Authorization", SessionManager.getInstance().getUserToken());

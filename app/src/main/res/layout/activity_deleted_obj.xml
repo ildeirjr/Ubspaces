@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="br.ufop.ildeir.ubspaces.activities.DeletedObjActivity">
+
+
+    <ScrollView
+        android:id="@+id/nestedScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        tools:layout_editor_absoluteX="8dp"
+        tools:ignore="MissingConstraints">
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="250dp">
+
+                <ImageView
+                    android:id="@+id/imgView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:srcCompat="@drawable/pc"
+                    android:scaleType="fitXY"/>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/gradient"/>
+
+                <TextView
+                    android:id="@+id/textNome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Computador"
+                    android:textColor="@color/white"
+                    android:layout_gravity="bottom"
+                    android:padding="20sp"
+                    android:textSize="@dimen/photoTextSize"/>
+
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20sp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Código"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textCodigo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="123456"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Estado"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textEstado"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Normal"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Descrição"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textDescricao"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Este texto é só para teste"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Data de entrada"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textData"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="12/03/2018"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Unidade acadêmica"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textUnidade"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ICEA"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Local"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textLocal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Laboratório de uso geral"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Departamento"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textDepto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="DECSI"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Recebedor"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textRecebedor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="José da Silva"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Nota Fiscal"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textNota"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="100029100"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Objeto excluído por"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textUsrExclusao"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="João"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Data/hora da exclusão"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textDataExclusao"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="01/10/2018 - 10:12"
+                    android:textColor="@color/secondaryText" />
+
+            </LinearLayout>
+
+
+
+
+
+        </LinearLayout>
+
+
+
+    </ScrollView>
+
+</android.support.constraint.ConstraintLayout>

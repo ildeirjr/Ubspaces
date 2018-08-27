@@ -293,7 +293,7 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
                 Item item = new GetObjDataRequest(recyclerListAdapter.getSortedList().get(position).getCodigo(),this).execute().get();
                 item.setImg(new GetObjImgRequest(recyclerListAdapter.getSortedList().get(position).getFoto()).execute().get());
                 ItemSingleton.getInstance().setItemSingleton(item);
-                startActivity(new Intent(this,VisualizeObjActivity.class));
+                startActivity(new Intent(this,DeletedObjActivity.class));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {
