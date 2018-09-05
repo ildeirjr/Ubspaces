@@ -1,9 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="br.ufop.ildeir.ubspaces.activities.ScanActivity">
 
-</android.support.constraint.ConstraintLayout>
+    <com.journeyapps.barcodescanner.DecoratedBarcodeView
+        android:id="@+id/zxing_barcode_scanner"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:zxing_scanner_layout="@layout/custom_barcode_scanner">
+    </com.journeyapps.barcodescanner.DecoratedBarcodeView>
+
+    <ImageButton
+        android:id="@+id/switch_flashlight"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="20dp"
+        android:padding="5dp"
+        android:scaleType="fitXY"
+        android:text="@string/turn_on_flashlight"
+        android:src="@drawable/ic_flash_on"
+        android:onClick="switchFlashlight"
+        android:background="@drawable/black_circle_shape"/>
+
+</RelativeLayout>

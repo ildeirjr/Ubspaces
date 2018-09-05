@@ -4,4 +4,6 @@
     <string name="close">Close</string>
     <string name="invalid_operator">Você não possui permissão para realizar esta operação.</string>
     <string name="error_401">ERROR_401</string>
+    <string name="turn_on_flashlight">Turn on Flashlight</string>
+    <string name="turn_off_flashlight">Turn off Flashlight</string>
 </resources>

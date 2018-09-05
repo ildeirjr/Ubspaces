@@ -46,6 +46,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     private IntentIntegrator intentIntegrator;
 
+    private static int SCAN_REQUEST_CODE = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.e("create","CREATE");
@@ -123,9 +125,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 SessionManager.getInstance().toLoginActivity();
                 finish();
             } else {
-                intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
+                intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
                 intentIntegrator.setBeepEnabled(false);
+                intentIntegrator.setCaptureActivity(ScanActivity.class);
                 intentIntegrator.initiateScan();
+//                Intent it = new Intent(this, ScanActivity.class);
+//                startActivityForResult(it, SCAN_REQUEST_CODE);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -143,6 +148,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         if(intentResult != null){
             if(intentResult.getContents() != null){
                 try {
+                    Log.e("result",intentResult.getContents());
                     Item item = new GetObjDataRequest(intentResult.getContents(),this).execute().get();
                     if(item != null){
                         item.setImg(new GetObjImgRequest(item.getFoto()).execute().get());

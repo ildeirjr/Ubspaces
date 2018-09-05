@@ -101,8 +101,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void scan(View view) {
-        intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
+        intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
         intentIntegrator.setBeepEnabled(false);
+        intentIntegrator.setCaptureActivity(ScanActivity.class);
         intentIntegrator.initiateScan();
     }
 

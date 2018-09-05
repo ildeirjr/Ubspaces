@@ -1,5 +1,6 @@
 package br.ufop.ildeir.ubspaces.activities;
 
+import android.app.DatePickerDialog;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -16,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -28,6 +30,9 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.miscellaneous.DateDialog;
@@ -52,7 +57,8 @@ public class EditarObjActivity extends AppCompatActivity {
     private ImageView fotoView;
     private Spinner stateSpinner, unitSpinner, deptSpinner;
     private int dia,mes,ano;
-    private DateDialog dateDialog;
+    private Calendar calendar;
+    private SimpleDateFormat simpleDateFormat;
     private static int IMG_REQUEST = 1;
     private static String[] STATE_SPINNER_OPTIONS = {"Normal","Quebrado","Consertado"};
     private static String[] UNIT_SPINNER_OPTIONS = {"Centro de Educação Aberta e a Distância (CEAD)",
@@ -137,6 +143,9 @@ public class EditarObjActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle("Editar objeto");
 
+        calendar = Calendar.getInstance();
+        simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
         etCodigo = findViewById(R.id.layoutCod);
         etNome = findViewById(R.id.layoutNome);
         etDescricao = findViewById(R.id.layoutDescricao);
@@ -195,9 +204,16 @@ public class EditarObjActivity extends AppCompatActivity {
             @Override
             public void onFocusChange(View view, boolean b) {
                 if(b){
-                    dateDialog = new DateDialog(view);
-                    FragmentTransaction ft = getFragmentManager().beginTransaction();
-                    dateDialog.show(ft,"DatePicker");
+                    DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                            calendar.set(Calendar.YEAR, i);
+                            calendar.set(Calendar.MONTH, i1);
+                            calendar.set(Calendar.DAY_OF_MONTH, i2);
+                            etData.getEditText().setText(simpleDateFormat.format(calendar.getTime()));
+                        }
+                    }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+                    datePickerDialog.show();
                     flagDateDialogOpened = true;
                 }
             }
@@ -226,15 +242,15 @@ public class EditarObjActivity extends AppCompatActivity {
 
         itemSingleton = ItemSingleton.getInstance().getItemSingleton();
         if(itemSingleton != null){
-            dia = itemSingleton.getDia();
-            mes = itemSingleton.getMes();
-            ano = itemSingleton.getAno();
+            calendar.set(Calendar.DAY_OF_MONTH, itemSingleton.getDia());
+            calendar.set(Calendar.MONTH, itemSingleton.getMes() - 1);
+            calendar.set(Calendar.YEAR, itemSingleton.getAno());
             etCodigo.getEditText().setText(itemSingleton.getCodigo());
             etNome.getEditText().setText(itemSingleton.getNome());
             etDescricao.getEditText().setText(itemSingleton.getDescricao());
             etLocal.getEditText().setText(itemSingleton.getLocal());
             //etDepto.getEditText().setText(itemSingleton.getDepto());
-            etData.getEditText().setText(dia + "/" + mes + "/" + ano);
+            etData.getEditText().setText(simpleDateFormat.format(calendar.getTime()));
             etRecebedor.getEditText().setText(itemSingleton.getRecebeu());
             etNota.getEditText().setText(itemSingleton.getNota());
             img = BitmapFactory.decodeByteArray(itemSingleton.getImg(),0,itemSingleton.getImg().length);
@@ -333,11 +349,9 @@ public class EditarObjActivity extends AppCompatActivity {
                 }else {
                     JSONObject jsonImg = new JSONObject();
                     if(flagDateDialogOpened){
-                        if(dateDialog.isFlagDateSeted()){
-                            dia = dateDialog.getDia();
-                            mes = dateDialog.getMes();
-                            ano = dateDialog.getAno();
-                        }
+                        dia = calendar.get(Calendar.DAY_OF_MONTH);
+                        mes = calendar.get(Calendar.MONTH) + 1;
+                        ano = calendar.get(Calendar.YEAR);
                     }
                     itemSingleton.setCodigo(etCodigo.getEditText().getText().toString());
                     itemSingleton.setNome(etNome.getEditText().getText().toString());
@@ -486,8 +500,9 @@ public class EditarObjActivity extends AppCompatActivity {
     }
 
     public void code_scan(View view) {
-        intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
+        intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
         intentIntegrator.setBeepEnabled(false);
+        intentIntegrator.setCaptureActivity(ScanActivity.class);
         intentIntegrator.initiateScan();
     }
 }

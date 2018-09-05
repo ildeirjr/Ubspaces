@@ -6,7 +6,7 @@ package br.ufop.ildeir.ubspaces.miscellaneous;
 
 public class UbspaceURL {
 
-    private String url = "http://200.239.153.174:8080/WebUbspaces/";
+    private String url = "http://192.168.2.14:8080/WebUbspaces/";
 
     public String getUrl(){
         return url;

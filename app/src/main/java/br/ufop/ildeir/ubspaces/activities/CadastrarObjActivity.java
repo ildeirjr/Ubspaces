@@ -1,14 +1,19 @@
 package br.ufop.ildeir.ubspaces.activities;
 
+import android.Manifest;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
@@ -18,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -30,6 +36,9 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.miscellaneous.DateDialog;
@@ -55,7 +64,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
     private ArrayAdapter<String> spinnerAdapter;
     private Spinner stateSpinner, unitSpinner, deptSpinner;
     private int dia,mes,ano;
-    private DateDialog dateDialog;
+    private Calendar calendar;
     private static int IMG_GALLERY = 1;
     private static int IMG_CAMERA = 2;
     private static String[] STATE_SPINNER_OPTIONS = {"Normal","Quebrado","Consertado"};
@@ -130,10 +139,21 @@ public class CadastrarObjActivity extends AppCompatActivity {
 
     IntentIntegrator intentIntegrator;
 
+    private SimpleDateFormat simpleDateFormat;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastrar_obj);
+
+        calendar = Calendar.getInstance();
+        simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
+        if(savedInstanceState != null){
+            calendar.set(Calendar.DAY_OF_MONTH, savedInstanceState.getInt("day"));
+            calendar.set(Calendar.MONTH, savedInstanceState.getInt("month"));
+            calendar.set(Calendar.YEAR, savedInstanceState.getInt("year"));
+        }
 
         try {
             String user = new GetUserRequest(SessionManager.getInstance().getUserId()).execute().get();
@@ -171,9 +191,16 @@ public class CadastrarObjActivity extends AppCompatActivity {
             @Override
             public void onFocusChange(View view, boolean b) {
                 if(b){
-                    dateDialog = new DateDialog(view);
-                    FragmentTransaction ft = getFragmentManager().beginTransaction();
-                    dateDialog.show(ft,"DatePicker");
+                    DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                            calendar.set(Calendar.YEAR, i);
+                            calendar.set(Calendar.MONTH, i1);
+                            calendar.set(Calendar.DAY_OF_MONTH, i2);
+                            etData.getEditText().setText(simpleDateFormat.format(calendar.getTime()));
+                        }
+                    }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+                    datePickerDialog.show();
                 }
             }
         });
@@ -248,9 +275,9 @@ public class CadastrarObjActivity extends AppCompatActivity {
                    !validarCampo(etRecebedor)){
                     return true;
                 }else {
-                    dia = dateDialog.getDia();
-                    mes = dateDialog.getMes();
-                    ano = dateDialog.getAno();
+                    dia = calendar.get(Calendar.DAY_OF_MONTH);
+                    mes = calendar.get(Calendar.MONTH) + 1;
+                    ano = calendar.get(Calendar.YEAR);
                     try {
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("codigo",etCodigo.getEditText().getText().toString());
@@ -306,6 +333,14 @@ public class CadastrarObjActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt("day", calendar.get(Calendar.DAY_OF_MONTH));
+        outState.putInt("month", calendar.get(Calendar.MONTH));
+        outState.putInt("year", calendar.get(Calendar.YEAR));
+        super.onSaveInstanceState(outState);
+    }
+
     public void escolherImagem(View view) {
         AlertDialog.Builder pictureDialog = new AlertDialog.Builder(this);
         pictureDialog.setTitle("Selecione uma opção");
@@ -336,7 +371,11 @@ public class CadastrarObjActivity extends AppCompatActivity {
 
     public void imageFromCamera(){
         Intent it = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(it, IMG_CAMERA);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED){
+            startActivityForResult(it, IMG_CAMERA);
+        }
+
     }
 
     @Override
@@ -411,6 +450,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
     public void code_scan(View view) {
         intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
         intentIntegrator.setBeepEnabled(false);
+        intentIntegrator.setCaptureActivity(ScanActivity.class);
         intentIntegrator.initiateScan();
     }
 
