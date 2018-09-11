@@ -92,7 +92,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void lista(){
-        startActivity(new Intent(this,ListObjActivity.class));
+        Intent it = new Intent(this,ListObjActivity.class);
+        it.putExtra("totalObjNum",totalObjNum.getText());
+        startActivity(it);
     }
 
     public void listaExcluidos(){

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.ufop.ildeir.ubspaces.R;
+import br.ufop.ildeir.ubspaces.interfaces.OnLoadMoreListener;
 import br.ufop.ildeir.ubspaces.miscellaneous.FlipAnimator;
 import br.ufop.ildeir.ubspaces.objects.RecyclerViewItem;
 
@@ -70,7 +71,7 @@ public class DeletedRecyclerListAdapter extends RecyclerView.Adapter<DeletedRecy
     private Context context;
     private RecyclerListAdapter.MessageAdapterListener listener;
     private SparseBooleanArray selectedItems;
-    private RecyclerListAdapter.OnLoadMoreListener onLoadMoreListener;
+    private OnLoadMoreListener onLoadMoreListener;
 
     private final int VIEW_TYPE_ITEM = 0;
     private final int VIEW_TYPE_LOADING = 1;
@@ -291,10 +292,6 @@ public class DeletedRecyclerListAdapter extends RecyclerView.Adapter<DeletedRecy
         this.filteredItemsByName = filteredItemsByName;
     }
 
-    public void setOnLoadMoreListener(RecyclerListAdapter.OnLoadMoreListener onLoadMoreListener) {
-        this.onLoadMoreListener = onLoadMoreListener;
-    }
-
     public interface MessageAdapterListener {
 
         void onItemRowClicked(int position);
@@ -302,10 +299,6 @@ public class DeletedRecyclerListAdapter extends RecyclerView.Adapter<DeletedRecy
         void onIconClicked(int position);
 
         void onRowLongClicked(int position);
-    }
-
-    public interface OnLoadMoreListener {
-        void onLoadMore();
     }
 
 }
