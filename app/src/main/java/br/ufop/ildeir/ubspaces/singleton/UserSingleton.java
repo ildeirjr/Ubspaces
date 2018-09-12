@@ -17,7 +17,7 @@ public class UserSingleton {
     private int id;
     private String nome;
     private String email;
-    private int dia, mes, ano;
+    private String dataNasc;
     private String depto;
     private String authenticationToken;
 
@@ -32,9 +32,7 @@ public class UserSingleton {
         id = 0;
         nome = "";
         email = "";
-        dia = 0;
-        mes = 0;
-        ano = 0;
+        dataNasc = "";
         depto = "";
         authenticationToken = "";
     }
@@ -63,28 +61,12 @@ public class UserSingleton {
         this.email = email;
     }
 
-    public int getDia() {
-        return dia;
+    public String getDataNasc() {
+        return dataNasc;
     }
 
-    public void setDia(int dia) {
-        this.dia = dia;
-    }
-
-    public int getMes() {
-        return mes;
-    }
-
-    public void setMes(int mes) {
-        this.mes = mes;
-    }
-
-    public int getAno() {
-        return ano;
-    }
-
-    public void setAno(int ano) {
-        this.ano = ano;
+    public void setDataNasc(String dataNasc) {
+        this.dataNasc = dataNasc;
     }
 
     public String getDepto() {

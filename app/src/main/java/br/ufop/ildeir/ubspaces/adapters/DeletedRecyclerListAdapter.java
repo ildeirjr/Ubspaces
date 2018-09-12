@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.ufop.ildeir.ubspaces.R;
-import br.ufop.ildeir.ubspaces.interfaces.OnLoadMoreListener;
+import br.ufop.ildeir.ubspaces.listeners.OnLoadMoreListener;
 import br.ufop.ildeir.ubspaces.miscellaneous.FlipAnimator;
 import br.ufop.ildeir.ubspaces.objects.RecyclerViewItem;
 
@@ -140,7 +140,7 @@ public class DeletedRecyclerListAdapter extends RecyclerView.Adapter<DeletedRecy
         final RecyclerViewItem item = sortedList.get(position);
         holder.itemName.setText(item.getNome());
         holder.itemCode.setText("Código: " + item.getCodigo());
-        holder.itemDate.setText(item.getDia() + "/" + item.getMes() + "/" + item.getAno());
+        holder.itemDate.setText(item.getDataEntrada());
         if(item.getFoto().equals("null.jpg")){
             holder.itemThumbnail.setImageResource( R.drawable.ic_camera);
         }else holder.itemThumbnail.setImageBitmap(item.createImgBitmap());

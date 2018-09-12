@@ -17,9 +17,7 @@ public class Item {
     private String codigo;
     private String nome;
     private String estado;
-    private int dia;
-    private int mes;
-    private int ano;
+    private String dataEntrada;
     private String local;
     private String nota;
     private String recebeu;
@@ -59,28 +57,12 @@ public class Item {
         this.estado = estado;
     }
 
-    public int getDia() {
-        return dia;
+    public String getDataEntrada() {
+        return dataEntrada;
     }
 
-    public void setDia(int dia) {
-        this.dia = dia;
-    }
-
-    public int getMes() {
-        return mes;
-    }
-
-    public void setMes(int mes) {
-        this.mes = mes;
-    }
-
-    public int getAno() {
-        return ano;
-    }
-
-    public void setAno(int ano) {
-        this.ano = ano;
+    public void setDataEntrada(String dataEntrada) {
+        this.dataEntrada = dataEntrada;
     }
 
     public String getLocal() {
@@ -168,9 +150,7 @@ public class Item {
             setCodigo(jsonItem.getString("codigo"));
             setNome(jsonItem.getString("nome"));
             setEstado(jsonItem.getString("estado"));
-            setDia(Integer.parseInt(jsonItem.getString("dia")));
-            setMes(Integer.parseInt(jsonItem.getString("mes")));
-            setAno(Integer.parseInt(jsonItem.getString("ano")));
+            setDataEntrada(jsonItem.getString("data_entrada"));
             setLocal(jsonItem.getString("local"));
             setNota(jsonItem.getString("nota"));
             setRecebeu(jsonItem.getString("quem_recebeu"));
@@ -191,9 +171,7 @@ public class Item {
             jsonItem.put("codigo",getCodigo());
             jsonItem.put("nome",getNome());
             jsonItem.put("estado",getEstado());
-            jsonItem.put("dia",getDia());
-            jsonItem.put("mes",getMes());
-            jsonItem.put("ano",getAno());
+            jsonItem.put("data_entrada",getDataEntrada());
             jsonItem.put("local",getLocal());
             jsonItem.put("nota",getNota());
             jsonItem.put("recebeu",getRecebeu());
@@ -216,70 +194,48 @@ public class Item {
         return bitmap;
     }
 
-    public int compareItemDate(Item item){
-        if(dia == item.getDia() && mes == item.getMes() && ano == item.getAno()){
-            return 0;
-        } else if(dia > item.getDia() && mes == item.getMes() && ano == item.getAno()){
-            return 1;
-        } else if(dia == item.getDia() && mes > item.getMes() && ano == item.getAno()){
-            return 1;
-        } else if(dia == item.getDia() && mes == item.getMes() && ano > item.getAno()){
-            return 1;
-        } else if(dia > item.getDia() && mes > item.getMes() && ano == item.getAno()){
-            return 1;
-        } else if(dia > item.getDia() && mes == item.getMes() && ano > item.getAno()){
-            return 1;
-        } else if(dia == item.getDia() && mes > item.getMes() && ano > item.getAno()){
-            return 1;
-        } else if(dia > item.getDia() && mes > item.getMes() && ano > item.getAno()){
-            return 1;
-        } else {
-            return -1;
-        }
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Item)) return false;
 
         Item item = (Item) o;
 
-        if (dia != item.dia) return false;
-        if (mes != item.mes) return false;
-        if (ano != item.ano) return false;
-        if (!codigo.equals(item.codigo)) return false;
-        if (!nome.equals(item.nome)) return false;
-        if (!estado.equals(item.estado)) return false;
-        if (!local.equals(item.local)) return false;
-        if (!nota.equals(item.nota)) return false;
-        if (!recebeu.equals(item.recebeu)) return false;
-        if (!depto.equals(item.depto)) return false;
-        if (!descricao.equals(item.descricao)) return false;
-        if (!unidade.equals(item.unidade)) return false;
-        if (!foto.equals(item.foto)) return false;
-        if (!nomeUsrExclusao.equals(item.nomeUsrExclusao)) return false;
-        if (!dataExclusao.equals(item.dataExclusao)) return false;
+        if (codigo != null ? !codigo.equals(item.codigo) : item.codigo != null) return false;
+        if (nome != null ? !nome.equals(item.nome) : item.nome != null) return false;
+        if (estado != null ? !estado.equals(item.estado) : item.estado != null) return false;
+        if (dataEntrada != null ? !dataEntrada.equals(item.dataEntrada) : item.dataEntrada != null)
+            return false;
+        if (local != null ? !local.equals(item.local) : item.local != null) return false;
+        if (nota != null ? !nota.equals(item.nota) : item.nota != null) return false;
+        if (recebeu != null ? !recebeu.equals(item.recebeu) : item.recebeu != null) return false;
+        if (depto != null ? !depto.equals(item.depto) : item.depto != null) return false;
+        if (descricao != null ? !descricao.equals(item.descricao) : item.descricao != null)
+            return false;
+        if (unidade != null ? !unidade.equals(item.unidade) : item.unidade != null) return false;
+        if (foto != null ? !foto.equals(item.foto) : item.foto != null) return false;
+        if (nomeUsrExclusao != null ? !nomeUsrExclusao.equals(item.nomeUsrExclusao) : item.nomeUsrExclusao != null)
+            return false;
+        if (dataExclusao != null ? !dataExclusao.equals(item.dataExclusao) : item.dataExclusao != null)
+            return false;
         return Arrays.equals(img, item.img);
     }
 
     @Override
     public int hashCode() {
-        int result = codigo.hashCode();
-        result = 31 * result + nome.hashCode();
-        result = 31 * result + estado.hashCode();
-        result = 31 * result + dia;
-        result = 31 * result + mes;
-        result = 31 * result + ano;
-        result = 31 * result + local.hashCode();
-        result = 31 * result + nota.hashCode();
-        result = 31 * result + recebeu.hashCode();
-        result = 31 * result + depto.hashCode();
-        result = 31 * result + descricao.hashCode();
-        result = 31 * result + unidade.hashCode();
-        result = 31 * result + foto.hashCode();
-        result = 31 * result + nomeUsrExclusao.hashCode();
-        result = 31 * result + dataExclusao.hashCode();
+        int result = codigo != null ? codigo.hashCode() : 0;
+        result = 31 * result + (nome != null ? nome.hashCode() : 0);
+        result = 31 * result + (estado != null ? estado.hashCode() : 0);
+        result = 31 * result + (dataEntrada != null ? dataEntrada.hashCode() : 0);
+        result = 31 * result + (local != null ? local.hashCode() : 0);
+        result = 31 * result + (nota != null ? nota.hashCode() : 0);
+        result = 31 * result + (recebeu != null ? recebeu.hashCode() : 0);
+        result = 31 * result + (depto != null ? depto.hashCode() : 0);
+        result = 31 * result + (descricao != null ? descricao.hashCode() : 0);
+        result = 31 * result + (unidade != null ? unidade.hashCode() : 0);
+        result = 31 * result + (foto != null ? foto.hashCode() : 0);
+        result = 31 * result + (nomeUsrExclusao != null ? nomeUsrExclusao.hashCode() : 0);
+        result = 31 * result + (dataExclusao != null ? dataExclusao.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(img);
         return result;
     }

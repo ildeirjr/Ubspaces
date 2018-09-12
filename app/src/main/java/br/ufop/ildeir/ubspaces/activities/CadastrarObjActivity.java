@@ -43,6 +43,7 @@ import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.miscellaneous.DateDialog;
 import br.ufop.ildeir.ubspaces.R;
+import br.ufop.ildeir.ubspaces.miscellaneous.DateHandler;
 import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
 import br.ufop.ildeir.ubspaces.requests.post.PostObjDataRequest;
 import br.ufop.ildeir.ubspaces.requests.post.PostObjImgRequest;
@@ -139,15 +140,12 @@ public class CadastrarObjActivity extends AppCompatActivity {
 
     IntentIntegrator intentIntegrator;
 
-    private SimpleDateFormat simpleDateFormat;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastrar_obj);
 
         calendar = Calendar.getInstance();
-        simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
         if(savedInstanceState != null){
             calendar.set(Calendar.DAY_OF_MONTH, savedInstanceState.getInt("day"));
@@ -197,7 +195,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
                             calendar.set(Calendar.YEAR, i);
                             calendar.set(Calendar.MONTH, i1);
                             calendar.set(Calendar.DAY_OF_MONTH, i2);
-                            etData.getEditText().setText(simpleDateFormat.format(calendar.getTime()));
+                            etData.getEditText().setText(DateHandler.toStringDate(calendar.getTime()));
                         }
                     }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
                     datePickerDialog.show();
@@ -275,9 +273,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
                    !validarCampo(etRecebedor)){
                     return true;
                 }else {
-                    dia = calendar.get(Calendar.DAY_OF_MONTH);
-                    mes = calendar.get(Calendar.MONTH) + 1;
-                    ano = calendar.get(Calendar.YEAR);
+                    String sqlDate = DateHandler.toSqlDate(calendar.getTime());
                     try {
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("codigo",etCodigo.getEditText().getText().toString());
@@ -286,9 +282,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
                         jsonObject.put("descricao",etDescricao.getEditText().getText().toString());
                         jsonObject.put("local",etLocal.getEditText().getText().toString());
                         jsonObject.put("depto",deptSpinner.getSelectedItem().toString());
-                        jsonObject.put("dia",dia);
-                        jsonObject.put("mes",mes);
-                        jsonObject.put("ano",ano);
+                        jsonObject.put("data_entrada",sqlDate);
                         jsonObject.put("recebeu",etRecebedor.getEditText().getText().toString());
                         jsonObject.put("nota",etNota.getEditText().getText().toString());
                         jsonObject.put("unidade",unitSpinner.getSelectedItem().toString());

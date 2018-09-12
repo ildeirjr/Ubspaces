@@ -13,9 +13,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.R;
+import br.ufop.ildeir.ubspaces.miscellaneous.DateHandler;
 import br.ufop.ildeir.ubspaces.requests.delete.DeleteObjRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
@@ -36,6 +38,9 @@ public class VisualizarObjActivity extends AppCompatActivity {
     private TextView textUnidade;
     private ImageView foto;
     private Bitmap img;
+
+    private SimpleDateFormat simpleDateFormat;
+    private SimpleDateFormat sqlDateFormat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,9 +84,7 @@ public class VisualizarObjActivity extends AppCompatActivity {
             textDescricao.setText(ItemSingleton.getInstance().getItemSingleton().getDescricao());
             textLocal.setText(ItemSingleton.getInstance().getItemSingleton().getLocal());
             textDepto.setText(ItemSingleton.getInstance().getItemSingleton().getDepto());
-            textData.setText(ItemSingleton.getInstance().getItemSingleton().getDia() + "/" +
-                             ItemSingleton.getInstance().getItemSingleton().getMes() + "/" +
-                             ItemSingleton.getInstance().getItemSingleton().getAno());
+            textData.setText(DateHandler.sqlDateToString(ItemSingleton.getInstance().getItemSingleton().getDataEntrada()));
             textRecebedor.setText(ItemSingleton.getInstance().getItemSingleton().getRecebeu());
             textNota.setText(ItemSingleton.getInstance().getItemSingleton().getNota());
             textUnidade.setText(ItemSingleton.getInstance().getItemSingleton().getUnidade());

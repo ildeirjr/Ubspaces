@@ -12,7 +12,6 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.util.SortedList;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
@@ -40,19 +39,16 @@ import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.adapters.RecyclerListAdapter;
-import br.ufop.ildeir.ubspaces.interfaces.OnLoadMoreListener;
+import br.ufop.ildeir.ubspaces.listeners.OnLoadMoreListener;
 import br.ufop.ildeir.ubspaces.miscellaneous.RecyclerItemTouchHelper;
 import br.ufop.ildeir.ubspaces.miscellaneous.WrapContentLinearLayoutManager;
 import br.ufop.ildeir.ubspaces.network.RetrofitConfig;
 import br.ufop.ildeir.ubspaces.objects.Item;
 import br.ufop.ildeir.ubspaces.objects.RecyclerViewItem;
 import br.ufop.ildeir.ubspaces.requests.delete.DeleteObjRequest;
-import br.ufop.ildeir.ubspaces.requests.get.GetAllObjRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetObjDataRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetObjImgRequest;
-import br.ufop.ildeir.ubspaces.requests.get.GetObjThumbRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
-import br.ufop.ildeir.ubspaces.requests.get.SearchObjByNameRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 import br.ufop.ildeir.ubspaces.singleton.ObjectListSingleton;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
@@ -87,7 +83,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
     private ProgressBar progressBar;
 
     // variable to define how many items you want to load in RecyclerView at a time
-    private final static int limit = 10;
+    private final static int limit = 20;
 
     private int totalObjNum;
 
@@ -659,100 +655,100 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
         }
 
     public void filterDate(View view) {
-        if (!isFabSeted) {
-            LayoutInflater layoutInflater = getLayoutInflater();
-            View v = layoutInflater.inflate(R.layout.date_dialog, null);
-
-            final DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-
-            dateStart = v.findViewById(R.id.startDate);
-            dateEnd = v.findViewById(R.id.endDate);
-            dateStart.setText(dateFormat.format(calendarStart.getTime()));
-            dateEnd.setText(dateFormat.format(calendarEnd.getTime()));
-
-            dateStart.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
-                        @Override
-                        public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-                            calendarStart.set(Calendar.YEAR, i);
-                            calendarStart.set(Calendar.MONTH, i1);
-                            calendarStart.set(Calendar.DAY_OF_MONTH, i2);
-                            dateStart.setText(dateFormat.format(calendarStart.getTime()));
-                        }
-                    }, calendarStart.get(Calendar.YEAR), calendarStart.get(Calendar.MONTH), calendarStart.get(Calendar.DAY_OF_MONTH));
-                    datePickerDialog.show();
-                }
-            });
-
-            dateEnd.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
-                        @Override
-                        public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-                            calendarEnd.set(Calendar.YEAR, i);
-                            calendarEnd.set(Calendar.MONTH, i1);
-                            calendarEnd.set(Calendar.DAY_OF_MONTH, i2);
-                            dateEnd.setText(dateFormat.format(calendarEnd.getTime()));
-                        }
-                    }, calendarEnd.get(Calendar.YEAR), calendarEnd.get(Calendar.MONTH), calendarEnd.get(Calendar.DAY_OF_MONTH));
-                    datePickerDialog.show();
-                }
-            });
-
-            AlertDialog alertDialog;
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Pesquisar por data");
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    ArrayList<RecyclerViewItem> filteredItems = new ArrayList<>();
-                    Item dateStart = new Item();
-                    Item dateEnd = new Item();
-                    dateStart.setDia(calendarStart.get(Calendar.DAY_OF_MONTH));
-                    dateStart.setMes(calendarStart.get(Calendar.MONTH) + 1);
-                    dateStart.setAno(calendarStart.get(Calendar.YEAR));
-                    dateEnd.setDia(calendarEnd.get(Calendar.DAY_OF_MONTH));
-                    dateEnd.setMes(calendarEnd.get(Calendar.MONTH) + 1);
-                    dateEnd.setAno(calendarEnd.get(Calendar.YEAR));
-                    itemList = recyclerListAdapter.getItemListBackup();
-                    for (int k = 0; k < itemList.size(); k++) {
-                        Log.e("data Inicio",dateStart.getDia() + "/" + dateStart.getMes() + "/" + dateStart.getAno());
-                        Log.e("data Item",itemList.get(k).getDia() + "/" + itemList.get(k).getMes() + "/" + itemList.get(k).getAno());
-                        Log.e("data Final",dateEnd.getDia() + "/" + dateEnd.getMes() + "/" + dateEnd.getAno());
-                        if ((itemList.get(k).compareItemDate(dateStart) >= 0) && (itemList.get(k).compareItemDate(dateEnd) <= 0)) {
-                            Log.e("if",""+itemList.get(k).compareItemDate(dateStart) + " - " + itemList.get(k).compareItemDate(dateEnd));
-                            filteredItems.add(itemList.get(k));
-                            recyclerListAdapter.getFilteredItemsByDate().add(itemList.get(k));
-                        }
-                    }
-                    fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dark_red)));
-                    fabDate.setImageResource(R.drawable.ic_close);
-                    isFabSeted = true;
-                    Log.e("tamanho lista filtro", ""+filteredItems.size());
-                    recyclerListAdapter.replaceAll(filteredItems);
-                }
-            });
-            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                }
-            });
-            builder.setView(v);
-            alertDialog = builder.create();
-            alertDialog.show();
-        } else {
-            recyclerListAdapter.getItemList().clear();
-            for(int k=0 ; k<recyclerListAdapter.getItemListBackup().size() ; k++){
-                recyclerListAdapter.restoreItem(recyclerListAdapter.getItemListBackup().get(k),k);
-            }
-            recyclerListAdapter.getFilteredItemsByDate().clear();
-            fabDate.setImageResource(R.drawable.ic_calendar);
-            fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
-            isFabSeted = false;
-        }
+//        if (!isFabSeted) {
+//            LayoutInflater layoutInflater = getLayoutInflater();
+//            View v = layoutInflater.inflate(R.layout.date_dialog, null);
+//
+//            final DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+//
+//            dateStart = v.findViewById(R.id.startDate);
+//            dateEnd = v.findViewById(R.id.endDate);
+//            dateStart.setText(dateFormat.format(calendarStart.getTime()));
+//            dateEnd.setText(dateFormat.format(calendarEnd.getTime()));
+//
+//            dateStart.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
+//                        @Override
+//                        public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+//                            calendarStart.set(Calendar.YEAR, i);
+//                            calendarStart.set(Calendar.MONTH, i1);
+//                            calendarStart.set(Calendar.DAY_OF_MONTH, i2);
+//                            dateStart.setText(dateFormat.format(calendarStart.getTime()));
+//                        }
+//                    }, calendarStart.get(Calendar.YEAR), calendarStart.get(Calendar.MONTH), calendarStart.get(Calendar.DAY_OF_MONTH));
+//                    datePickerDialog.show();
+//                }
+//            });
+//
+//            dateEnd.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
+//                        @Override
+//                        public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+//                            calendarEnd.set(Calendar.YEAR, i);
+//                            calendarEnd.set(Calendar.MONTH, i1);
+//                            calendarEnd.set(Calendar.DAY_OF_MONTH, i2);
+//                            dateEnd.setText(dateFormat.format(calendarEnd.getTime()));
+//                        }
+//                    }, calendarEnd.get(Calendar.YEAR), calendarEnd.get(Calendar.MONTH), calendarEnd.get(Calendar.DAY_OF_MONTH));
+//                    datePickerDialog.show();
+//                }
+//            });
+//
+//            AlertDialog alertDialog;
+//            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//            builder.setTitle("Pesquisar por data");
+//            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//                @Override
+//                public void onClick(DialogInterface dialogInterface, int i) {
+//                    ArrayList<RecyclerViewItem> filteredItems = new ArrayList<>();
+//                    Item dateStart = new Item();
+//                    Item dateEnd = new Item();
+//                    dateStart.setDia(calendarStart.get(Calendar.DAY_OF_MONTH));
+//                    dateStart.setMes(calendarStart.get(Calendar.MONTH) + 1);
+//                    dateStart.setAno(calendarStart.get(Calendar.YEAR));
+//                    dateEnd.setDia(calendarEnd.get(Calendar.DAY_OF_MONTH));
+//                    dateEnd.setMes(calendarEnd.get(Calendar.MONTH) + 1);
+//                    dateEnd.setAno(calendarEnd.get(Calendar.YEAR));
+//                    itemList = recyclerListAdapter.getItemListBackup();
+//                    for (int k = 0; k < itemList.size(); k++) {
+//                        Log.e("data Inicio",dateStart.getDia() + "/" + dateStart.getMes() + "/" + dateStart.getAno());
+//                        Log.e("data Item",itemList.get(k).getDia() + "/" + itemList.get(k).getMes() + "/" + itemList.get(k).getAno());
+//                        Log.e("data Final",dateEnd.getDia() + "/" + dateEnd.getMes() + "/" + dateEnd.getAno());
+//                        if ((itemList.get(k).compareItemDate(dateStart) >= 0) && (itemList.get(k).compareItemDate(dateEnd) <= 0)) {
+//                            Log.e("if",""+itemList.get(k).compareItemDate(dateStart) + " - " + itemList.get(k).compareItemDate(dateEnd));
+//                            filteredItems.add(itemList.get(k));
+//                            recyclerListAdapter.getFilteredItemsByDate().add(itemList.get(k));
+//                        }
+//                    }
+//                    fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dark_red)));
+//                    fabDate.setImageResource(R.drawable.ic_close);
+//                    isFabSeted = true;
+//                    Log.e("tamanho lista filtro", ""+filteredItems.size());
+//                    recyclerListAdapter.replaceAll(filteredItems);
+//                }
+//            });
+//            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+//                @Override
+//                public void onClick(DialogInterface dialogInterface, int i) {
+//                }
+//            });
+//            builder.setView(v);
+//            alertDialog = builder.create();
+//            alertDialog.show();
+//        } else {
+//            recyclerListAdapter.getItemList().clear();
+//            for(int k=0 ; k<recyclerListAdapter.getItemListBackup().size() ; k++){
+//                recyclerListAdapter.restoreItem(recyclerListAdapter.getItemListBackup().get(k),k);
+//            }
+//            recyclerListAdapter.getFilteredItemsByDate().clear();
+//            fabDate.setImageResource(R.drawable.ic_calendar);
+//            fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
+//            isFabSeted = false;
+//        }
     }
 
 

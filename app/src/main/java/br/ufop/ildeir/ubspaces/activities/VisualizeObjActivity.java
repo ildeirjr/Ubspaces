@@ -13,6 +13,7 @@ import org.w3c.dom.Text;
 import java.io.ByteArrayOutputStream;
 
 import br.ufop.ildeir.ubspaces.R;
+import br.ufop.ildeir.ubspaces.miscellaneous.DateHandler;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 
 /**
@@ -63,9 +64,7 @@ public class VisualizeObjActivity extends AppCompatActivity {
             textDescricao.setText(ItemSingleton.getInstance().getItemSingleton().getDescricao());
             textLocal.setText(ItemSingleton.getInstance().getItemSingleton().getLocal());
             textDepto.setText(ItemSingleton.getInstance().getItemSingleton().getDepto());
-            textData.setText(ItemSingleton.getInstance().getItemSingleton().getDia() + "/" +
-                    ItemSingleton.getInstance().getItemSingleton().getMes() + "/" +
-                    ItemSingleton.getInstance().getItemSingleton().getAno());
+            textData.setText(DateHandler.sqlDateToString(ItemSingleton.getInstance().getItemSingleton().getDataEntrada()));
             textRecebedor.setText(ItemSingleton.getInstance().getItemSingleton().getRecebeu());
             textNota.setText(ItemSingleton.getInstance().getItemSingleton().getNota());
             textUnidade.setText(ItemSingleton.getInstance().getItemSingleton().getUnidade());

@@ -30,6 +30,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -37,6 +38,7 @@ import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.miscellaneous.DateDialog;
 import br.ufop.ildeir.ubspaces.R;
+import br.ufop.ildeir.ubspaces.miscellaneous.DateHandler;
 import br.ufop.ildeir.ubspaces.objects.Item;
 import br.ufop.ildeir.ubspaces.requests.post.EditObjDataRequest;
 import br.ufop.ildeir.ubspaces.requests.post.PostObjImgRequest;
@@ -58,7 +60,6 @@ public class EditarObjActivity extends AppCompatActivity {
     private Spinner stateSpinner, unitSpinner, deptSpinner;
     private int dia,mes,ano;
     private Calendar calendar;
-    private SimpleDateFormat simpleDateFormat;
     private static int IMG_REQUEST = 1;
     private static String[] STATE_SPINNER_OPTIONS = {"Normal","Quebrado","Consertado"};
     private static String[] UNIT_SPINNER_OPTIONS = {"Centro de Educação Aberta e a Distância (CEAD)",
@@ -144,7 +145,6 @@ public class EditarObjActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Editar objeto");
 
         calendar = Calendar.getInstance();
-        simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
         etCodigo = findViewById(R.id.layoutCod);
         etNome = findViewById(R.id.layoutNome);
@@ -210,7 +210,7 @@ public class EditarObjActivity extends AppCompatActivity {
                             calendar.set(Calendar.YEAR, i);
                             calendar.set(Calendar.MONTH, i1);
                             calendar.set(Calendar.DAY_OF_MONTH, i2);
-                            etData.getEditText().setText(simpleDateFormat.format(calendar.getTime()));
+                            etData.getEditText().setText(DateHandler.toStringDate(calendar.getTime()));
                         }
                     }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
                     datePickerDialog.show();
@@ -242,15 +242,13 @@ public class EditarObjActivity extends AppCompatActivity {
 
         itemSingleton = ItemSingleton.getInstance().getItemSingleton();
         if(itemSingleton != null){
-            calendar.set(Calendar.DAY_OF_MONTH, itemSingleton.getDia());
-            calendar.set(Calendar.MONTH, itemSingleton.getMes() - 1);
-            calendar.set(Calendar.YEAR, itemSingleton.getAno());
+            calendar.setTime(DateHandler.sqlToDate(itemSingleton.getDataEntrada()));
             etCodigo.getEditText().setText(itemSingleton.getCodigo());
             etNome.getEditText().setText(itemSingleton.getNome());
             etDescricao.getEditText().setText(itemSingleton.getDescricao());
             etLocal.getEditText().setText(itemSingleton.getLocal());
             //etDepto.getEditText().setText(itemSingleton.getDepto());
-            etData.getEditText().setText(simpleDateFormat.format(calendar.getTime()));
+            etData.getEditText().setText(DateHandler.toStringDate(calendar.getTime()));
             etRecebedor.getEditText().setText(itemSingleton.getRecebeu());
             etNota.getEditText().setText(itemSingleton.getNota());
             img = BitmapFactory.decodeByteArray(itemSingleton.getImg(),0,itemSingleton.getImg().length);
@@ -348,20 +346,15 @@ public class EditarObjActivity extends AppCompatActivity {
                     return true;
                 }else {
                     JSONObject jsonImg = new JSONObject();
-                    if(flagDateDialogOpened){
-                        dia = calendar.get(Calendar.DAY_OF_MONTH);
-                        mes = calendar.get(Calendar.MONTH) + 1;
-                        ano = calendar.get(Calendar.YEAR);
-                    }
+                    String sqlDate = DateHandler.toSqlDate(calendar.getTime());
+                    Log.e("data",sqlDate);
                     itemSingleton.setCodigo(etCodigo.getEditText().getText().toString());
                     itemSingleton.setNome(etNome.getEditText().getText().toString());
                     itemSingleton.setEstado(stateSpinner.getSelectedItem().toString());
                     itemSingleton.setDescricao(etDescricao.getEditText().getText().toString());
                     itemSingleton.setLocal(etLocal.getEditText().getText().toString());
                     itemSingleton.setDepto(deptSpinner.getSelectedItem().toString());
-                    itemSingleton.setDia(dia);
-                    itemSingleton.setMes(mes);
-                    itemSingleton.setAno(ano);
+                    itemSingleton.setDataEntrada(sqlDate);
                     itemSingleton.setRecebeu(etRecebedor.getEditText().getText().toString());
                     itemSingleton.setNota(etNota.getEditText().getText().toString());
                     itemSingleton.setUnidade(unitSpinner.getSelectedItem().toString());

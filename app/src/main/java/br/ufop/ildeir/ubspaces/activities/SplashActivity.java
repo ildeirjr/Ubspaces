@@ -44,9 +44,7 @@ public class SplashActivity extends AppCompatActivity {
                             UserSingleton singleton = UserSingleton.getInstance();
                             singleton.setNome(usr.getString("nome"));
                             singleton.setEmail(usr.getString("email"));
-                            singleton.setDia(usr.getInt("dia_nasc"));
-                            singleton.setDia(usr.getInt("mes_nasc"));
-                            singleton.setDia(usr.getInt("ano_nasc"));
+                            singleton.setDataNasc(usr.getString("data_nasc"));
                             singleton.setDepto(usr.getString("depto"));
                             System.out.println(singleton.getNome());
                             Intent it = new Intent(SplashActivity.this, HomeActivity.class);

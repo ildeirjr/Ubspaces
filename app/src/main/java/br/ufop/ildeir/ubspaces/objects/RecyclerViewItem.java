@@ -3,6 +3,8 @@ package br.ufop.ildeir.ubspaces.objects;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import com.google.gson.annotations.SerializedName;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,9 +18,10 @@ public class RecyclerViewItem {
 
     private String codigo;
     private String nome;
-    private int dia;
-    private int mes;
-    private int ano;
+
+    @SerializedName("data_entrada")
+    private String dataEntrada;
+
     private String foto;
     private byte[] img;
 
@@ -38,28 +41,12 @@ public class RecyclerViewItem {
         this.nome = nome;
     }
 
-    public int getDia() {
-        return dia;
+    public String getDataEntrada() {
+        return dataEntrada;
     }
 
-    public void setDia(int dia) {
-        this.dia = dia;
-    }
-
-    public int getMes() {
-        return mes;
-    }
-
-    public void setMes(int mes) {
-        this.mes = mes;
-    }
-
-    public int getAno() {
-        return ano;
-    }
-
-    public void setAno(int ano) {
-        this.ano = ano;
+    public void setDataEntrada(String dataEntrada) {
+        this.dataEntrada = dataEntrada;
     }
 
     public String getFoto() {
@@ -82,9 +69,7 @@ public class RecyclerViewItem {
         try {
             setCodigo(jsonItem.getString("codigo"));
             setNome(jsonItem.getString("nome"));
-            setDia(Integer.parseInt(jsonItem.getString("dia")));
-            setMes(Integer.parseInt(jsonItem.getString("mes")));
-            setAno(Integer.parseInt(jsonItem.getString("ano")));
+            setDataEntrada(jsonItem.getString("data_entrada"));
             setFoto(jsonItem.getString("foto"));
         } catch (JSONException e) {
             e.printStackTrace();
@@ -96,9 +81,7 @@ public class RecyclerViewItem {
         try {
             jsonItem.put("codigo",getCodigo());
             jsonItem.put("nome",getNome());
-            jsonItem.put("dia",getDia());
-            jsonItem.put("mes",getMes());
-            jsonItem.put("ano",getAno());
+            jsonItem.put("data_entrada",getDataEntrada());
             jsonItem.put("foto",getFoto());
             return jsonItem;
         } catch (JSONException e) {
@@ -112,28 +95,6 @@ public class RecyclerViewItem {
         return bitmap;
     }
 
-    public int compareItemDate(Item item){
-        if(dia == item.getDia() && mes == item.getMes() && ano == item.getAno()){
-            return 0;
-        } else if(dia > item.getDia() && mes == item.getMes() && ano == item.getAno()){
-            return 1;
-        } else if(dia == item.getDia() && mes > item.getMes() && ano == item.getAno()){
-            return 1;
-        } else if(dia == item.getDia() && mes == item.getMes() && ano > item.getAno()){
-            return 1;
-        } else if(dia > item.getDia() && mes > item.getMes() && ano == item.getAno()){
-            return 1;
-        } else if(dia > item.getDia() && mes == item.getMes() && ano > item.getAno()){
-            return 1;
-        } else if(dia == item.getDia() && mes > item.getMes() && ano > item.getAno()){
-            return 1;
-        } else if(dia > item.getDia() && mes > item.getMes() && ano > item.getAno()){
-            return 1;
-        } else {
-            return -1;
-        }
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -141,25 +102,21 @@ public class RecyclerViewItem {
 
         RecyclerViewItem that = (RecyclerViewItem) o;
 
-        if (getDia() != that.getDia()) return false;
-        if (getMes() != that.getMes()) return false;
-        if (getAno() != that.getAno()) return false;
-        if (!getCodigo().equals(that.getCodigo())) return false;
-        if (!getNome().equals(that.getNome())) return false;
-        if (getFoto() != null ? !getFoto().equals(that.getFoto()) : that.getFoto() != null)
+        if (codigo != null ? !codigo.equals(that.codigo) : that.codigo != null) return false;
+        if (nome != null ? !nome.equals(that.nome) : that.nome != null) return false;
+        if (dataEntrada != null ? !dataEntrada.equals(that.dataEntrada) : that.dataEntrada != null)
             return false;
-        return Arrays.equals(getImg(), that.getImg());
+        if (foto != null ? !foto.equals(that.foto) : that.foto != null) return false;
+        return Arrays.equals(img, that.img);
     }
 
     @Override
     public int hashCode() {
-        int result = getCodigo().hashCode();
-        result = 31 * result + getNome().hashCode();
-        result = 31 * result + getDia();
-        result = 31 * result + getMes();
-        result = 31 * result + getAno();
-        result = 31 * result + (getFoto() != null ? getFoto().hashCode() : 0);
-        result = 31 * result + Arrays.hashCode(getImg());
+        int result = codigo != null ? codigo.hashCode() : 0;
+        result = 31 * result + (nome != null ? nome.hashCode() : 0);
+        result = 31 * result + (dataEntrada != null ? dataEntrada.hashCode() : 0);
+        result = 31 * result + (foto != null ? foto.hashCode() : 0);
+        result = 31 * result + Arrays.hashCode(img);
         return result;
     }
 }

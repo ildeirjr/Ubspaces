@@ -1,11 +1,7 @@
 package br.ufop.ildeir.ubspaces.adapters;
 
 import android.content.Context;
-import android.content.Intent;
-import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
-import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
@@ -17,20 +13,14 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import br.ufop.ildeir.ubspaces.R;
-import br.ufop.ildeir.ubspaces.activities.VisualizarObjActivity;
-import br.ufop.ildeir.ubspaces.interfaces.OnLoadMoreListener;
-import br.ufop.ildeir.ubspaces.miscellaneous.CircleTransform;
+import br.ufop.ildeir.ubspaces.listeners.OnLoadMoreListener;
+import br.ufop.ildeir.ubspaces.miscellaneous.DateHandler;
 import br.ufop.ildeir.ubspaces.miscellaneous.FlipAnimator;
-import br.ufop.ildeir.ubspaces.objects.Item;
 import br.ufop.ildeir.ubspaces.objects.RecyclerViewItem;
-import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 
 /**
  * Created by Ildeir on 15/06/2018.
@@ -184,7 +174,7 @@ public class RecyclerListAdapter extends RecyclerView.Adapter {
             final RecyclerViewItem item = itemList.get(position);
             ((MyViewHolder) holder).itemName.setText(item.getNome());
             ((MyViewHolder) holder).itemCode.setText("Código: " + item.getCodigo());
-            ((MyViewHolder) holder).itemDate.setText(item.getDia() + "/" + item.getMes() + "/" + item.getAno());
+            ((MyViewHolder) holder).itemDate.setText(DateHandler.sqlDateToString(item.getDataEntrada()));
             if(item.getFoto().equals("null.jpg")){
                 ((MyViewHolder) holder).itemThumbnail.setImageResource( R.drawable.ic_camera);
             }else ((MyViewHolder) holder).itemThumbnail.setImageBitmap(item.createImgBitmap());
