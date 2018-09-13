@@ -148,7 +148,7 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
             if(itemsArrayList != null) {
                 Log.e("tamanho do array", String.valueOf(itemsArrayList.size()));
                 for (int i = 0; i < itemsArrayList.size(); i++) {
-                    itemsArrayList.get(i).setImg(new GetObjImgRequest(itemsArrayList.get(i).getFoto()).execute().get());
+                    //itemsArrayList.get(i).setImg(new GetObjImgRequest(itemsArrayList.get(i).getFoto()).execute().get());
                 }
                 ObjectListSingleton.getInstance().setObjectList(itemsArrayList);
                 recyclerListAdapter = new DeletedRecyclerListAdapter(this, ObjectListSingleton.getInstance().getObjectList(), this);
@@ -232,7 +232,7 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
             final ArrayList<RecyclerViewItem> filteredModelList = new SearchObjByNameRequest().execute(query,"deleted").get();
             if(filteredModelList != null){
                 for (int i=0 ; i<filteredModelList.size() ; i++){
-                    filteredModelList.get(i).setImg(new GetObjImgRequest(filteredModelList.get(i).getFoto()).execute().get());
+                    //filteredModelList.get(i).setImg(new GetObjImgRequest(filteredModelList.get(i).getFoto()).execute().get());
                 }
             }
             recyclerListAdapter.replaceAll(filteredModelList);

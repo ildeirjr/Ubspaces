@@ -23,7 +23,7 @@ public class RecyclerViewItem {
     private String dataEntrada;
 
     private String foto;
-    private byte[] img;
+    private Bitmap img;
 
     public String getCodigo() {
         return codigo;
@@ -57,11 +57,11 @@ public class RecyclerViewItem {
         this.foto = foto;
     }
 
-    public byte[] getImg() {
+    public Bitmap getImg() {
         return img;
     }
 
-    public void setImg(byte[] img) {
+    public void setImg(Bitmap img) {
         this.img = img;
     }
 
@@ -90,33 +90,8 @@ public class RecyclerViewItem {
         return null;
     }
 
-    public Bitmap createImgBitmap(){
-        Bitmap bitmap = BitmapFactory.decodeByteArray(img,0,img.length);
-        return bitmap;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof RecyclerViewItem)) return false;
-
-        RecyclerViewItem that = (RecyclerViewItem) o;
-
-        if (codigo != null ? !codigo.equals(that.codigo) : that.codigo != null) return false;
-        if (nome != null ? !nome.equals(that.nome) : that.nome != null) return false;
-        if (dataEntrada != null ? !dataEntrada.equals(that.dataEntrada) : that.dataEntrada != null)
-            return false;
-        if (foto != null ? !foto.equals(that.foto) : that.foto != null) return false;
-        return Arrays.equals(img, that.img);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = codigo != null ? codigo.hashCode() : 0;
-        result = 31 * result + (nome != null ? nome.hashCode() : 0);
-        result = 31 * result + (dataEntrada != null ? dataEntrada.hashCode() : 0);
-        result = 31 * result + (foto != null ? foto.hashCode() : 0);
-        result = 31 * result + Arrays.hashCode(img);
-        return result;
-    }
+//    public Bitmap createImgBitmap(){
+//        Bitmap bitmap = BitmapFactory.decodeByteArray(img,0,img.length);
+//        return bitmap;
+//    }
 }

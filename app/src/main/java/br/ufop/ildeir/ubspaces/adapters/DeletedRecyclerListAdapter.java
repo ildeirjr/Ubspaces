@@ -143,7 +143,7 @@ public class DeletedRecyclerListAdapter extends RecyclerView.Adapter<DeletedRecy
         holder.itemDate.setText(item.getDataEntrada());
         if(item.getFoto().equals("null.jpg")){
             holder.itemThumbnail.setImageResource( R.drawable.ic_camera);
-        }else holder.itemThumbnail.setImageBitmap(item.createImgBitmap());
+        }else holder.itemThumbnail.setImageBitmap(item.getImg());
 
         // change the row state to activated
         holder.itemView.setActivated(selectedItems.get(position, false));

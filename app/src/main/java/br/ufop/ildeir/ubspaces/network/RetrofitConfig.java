@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import br.ufop.ildeir.ubspaces.interfaces.GetObjListRequest;
 import br.ufop.ildeir.ubspaces.interfaces.GetObjThumbRequest;
+import br.ufop.ildeir.ubspaces.interfaces.SearchByDateRequest;
 import br.ufop.ildeir.ubspaces.interfaces.SearchByNameRequest;
 import br.ufop.ildeir.ubspaces.miscellaneous.UbspaceURL;
 import okhttp3.Interceptor;
@@ -57,6 +58,10 @@ public class RetrofitConfig {
 
     public SearchByNameRequest searchByNameRequest(){
         return this.retrofit.create(SearchByNameRequest.class);
+    }
+
+    public SearchByDateRequest searchByDateRequest(){
+        return this.retrofit.create(SearchByDateRequest.class);
     }
 
 }

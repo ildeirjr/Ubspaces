@@ -177,7 +177,7 @@ public class RecyclerListAdapter extends RecyclerView.Adapter {
             ((MyViewHolder) holder).itemDate.setText(DateHandler.sqlDateToString(item.getDataEntrada()));
             if(item.getFoto().equals("null.jpg")){
                 ((MyViewHolder) holder).itemThumbnail.setImageResource( R.drawable.ic_camera);
-            }else ((MyViewHolder) holder).itemThumbnail.setImageBitmap(item.createImgBitmap());
+            }else ((MyViewHolder) holder).itemThumbnail.setImageBitmap(item.getImg());
 
             // change the row state to activated
             holder.itemView.setActivated(selectedItems.get(position, false));
