@@ -7,6 +7,7 @@ import br.ufop.ildeir.ubspaces.interfaces.GetObjThumbRequest;
 import br.ufop.ildeir.ubspaces.interfaces.SearchByDateRequest;
 import br.ufop.ildeir.ubspaces.interfaces.SearchByNameRequest;
 import br.ufop.ildeir.ubspaces.miscellaneous.UbspaceURL;
+import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -31,11 +32,18 @@ public class RetrofitConfig {
                 Request original = chain.request();
 
                 Request request = original.newBuilder()
-                        .header("Authorization", "1gdh87efuhwi")
+                        .header("Authorization", SessionManager.getInstance().getUserToken())
                         .method(original.method(), original.body())
                         .build();
 
-                return chain.proceed(request);
+                Response response = chain.proceed(request);
+
+                if(response.code() == 401){
+                    SessionManager.getInstance().toLoginActivity();
+                    response.close();
+                }
+
+                return response;
             }
         });
 

@@ -98,7 +98,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void listaExcluidos(){
-        startActivity(new Intent(this, DeletedObjListActivity.class));
+        Intent it = new Intent(this,DeletedObjListActivity.class);
+        it.putExtra("totalObjNum",totalObjNum.getText());
+        startActivity(it);
     }
 
     public void exibeSobre(){

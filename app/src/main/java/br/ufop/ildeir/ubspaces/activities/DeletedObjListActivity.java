@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -12,7 +13,6 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.util.SortedList;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
@@ -26,9 +26,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,46 +41,68 @@ import java.util.concurrent.ExecutionException;
 import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.adapters.DeletedRecyclerListAdapter;
 import br.ufop.ildeir.ubspaces.adapters.RecyclerListAdapter;
+import br.ufop.ildeir.ubspaces.listeners.OnLoadMoreListener;
+import br.ufop.ildeir.ubspaces.miscellaneous.DateHandler;
 import br.ufop.ildeir.ubspaces.miscellaneous.DeletedRecyclerItemTouchHelper;
 import br.ufop.ildeir.ubspaces.miscellaneous.RecyclerItemTouchHelper;
 import br.ufop.ildeir.ubspaces.miscellaneous.WrapContentLinearLayoutManager;
+import br.ufop.ildeir.ubspaces.network.RetrofitConfig;
 import br.ufop.ildeir.ubspaces.objects.Item;
 import br.ufop.ildeir.ubspaces.objects.RecyclerViewItem;
 import br.ufop.ildeir.ubspaces.requests.delete.DeleteObjRequest;
-import br.ufop.ildeir.ubspaces.requests.get.GetAllObjRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetObjDataRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetObjImgRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
-import br.ufop.ildeir.ubspaces.requests.get.SearchObjByNameRequest;
 import br.ufop.ildeir.ubspaces.requests.post.RestoreObjRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 import br.ufop.ildeir.ubspaces.singleton.ObjectListSingleton;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
+import br.ufop.ildeir.ubspaces.singleton.UserSingleton;
+import br.ufop.ildeir.ubspaces.utils.Utils;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-public class DeletedObjListActivity extends AppCompatActivity implements DeletedRecyclerItemTouchHelper.RecyclerItemTouchHelperListener, android.support.v7.widget.SearchView.OnQueryTextListener, SearchView.OnCloseListener, RecyclerListAdapter.MessageAdapterListener {
+public class DeletedObjListActivity extends AppCompatActivity implements DeletedRecyclerItemTouchHelper.RecyclerItemTouchHelperListener, android.support.v7.widget.SearchView.OnQueryTextListener, SearchView.OnCloseListener, DeletedRecyclerListAdapter.MessageAdapterListener {
 
     private RecyclerView recyclerView;
     private DeletedRecyclerListAdapter recyclerListAdapter;
     private CoordinatorLayout coordinatorLayout;
-    private ArrayList<RecyclerViewItem> restoredItems;
+    private ArrayList<RecyclerViewItem> deletedItems;
     private ActionModeCallback actionModeCallback;
     private ActionMode actionMode;
     private int statusBarColor;
 
+    private MenuItem searchItem;
     private TextView dateStart;
     private TextView dateEnd;
     private Calendar calendarStart = Calendar.getInstance();
     private Calendar calendarEnd = Calendar.getInstance();
 
     private FloatingActionButton fabDate;
-    private SortedList<RecyclerViewItem> itemList;
+    private List<RecyclerViewItem> itemList;
     private boolean isFabSeted = false;
     private boolean isNameFilterActivated = false;
+
+    private ProgressBar progressBar;
+
+    // variable to define how many items you want to load in RecyclerView at a time
+    private final static int limit = 10;
+
+    private int totalObjNum;
+
+    private Call<ArrayList<RecyclerViewItem>> call;
+    private Call<ArrayList<RecyclerViewItem>> searchNameCall;
+    private Call<ArrayList<RecyclerViewItem>> searchDateCall;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_deleted_obj_list);
+        setContentView(R.layout.activity_list_obj);
+
+        Intent it = getIntent();
+        totalObjNum = Integer.parseInt(it.getStringExtra("totalObjNum"));
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -94,20 +118,386 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
         ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new DeletedRecyclerItemTouchHelper(0, ItemTouchHelper.LEFT,this);
         new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
 
-        restoredItems = new ArrayList<>();
+        itemList = new ArrayList<>();
+
+        deletedItems = new ArrayList<>();
 
         actionModeCallback = new ActionModeCallback();
 
         fabDate = findViewById(R.id.fabDateSearch);
+
+        progressBar = findViewById(R.id.progress_bar);
+
+        progressBar.setVisibility(View.VISIBLE);
+
+        loadData();
+    }
+
+    public void loadData(){
+        recyclerView.setVisibility(View.GONE);
+        fabDate.setVisibility(View.GONE);
+        Call<ArrayList<RecyclerViewItem>> call = new RetrofitConfig().getObjListRequest().getObjList("deleted","0",String.valueOf(limit));
+        call.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
+            @Override
+            public void onResponse(Call<ArrayList<RecyclerViewItem>> call, Response<ArrayList<RecyclerViewItem>> response) {
+                final ArrayList<RecyclerViewItem> itemsList = response.body();
+                for(int i=0 ; i<itemsList.size() ; i++){
+                    Call<ResponseBody> imgCall = new RetrofitConfig().getObjThumbRequest().getObjThumb(itemsList.get(i).getFoto());
+                    final int finalI = i;
+                    imgCall.enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if(response.body() != null){
+                                itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                            } else {
+                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                        }
+                    });
+                }
+//                ObjectListSingleton.getInstance().setObjectList(new ArrayList<RecyclerViewItem>());
+//                ObjectListSingleton.getInstance().getObjectList().addAll(itemsList);
+                itemList.clear();
+                itemList.addAll(itemsList);
+                if(itemsList.size() == limit){
+                    Log.e("teste","NULL");
+                    itemList.add(null);
+                }
+                recyclerListAdapter = new DeletedRecyclerListAdapter(getApplicationContext(), (ArrayList<RecyclerViewItem>)  itemList, DeletedObjListActivity.this, new OnLoadMoreListener() {
+                    @Override
+                    public void onLoadMore(int position) {
+                        loadMoreData(position);
+                    }
+                });
+                recyclerView.setItemAnimator(new DefaultItemAnimator());
+                progressBar.setVisibility(View.GONE);
+                recyclerView.setAdapter(recyclerListAdapter);
+                recyclerView.setVisibility(View.VISIBLE);
+//                recyclerListAdapter.getItemListBackup().addAll(ObjectListSingleton.getInstance().getObjectList());
+                fabDate.setVisibility(View.VISIBLE);
+                searchItem.setVisible(true);
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<RecyclerViewItem>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void loadMoreData(int skip){
+        Call<ArrayList<RecyclerViewItem>> call = new RetrofitConfig().getObjListRequest().getObjList("deleted",String.valueOf(skip),String.valueOf(limit));
+        call.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
+            @Override
+            public void onResponse(Call<ArrayList<RecyclerViewItem>> call, Response<ArrayList<RecyclerViewItem>> response) {
+                final ArrayList<RecyclerViewItem> itemsList = response.body();
+                for(int i=0 ; i<itemsList.size() ; i++){
+                    Call<ResponseBody> imgCall = new RetrofitConfig().getObjThumbRequest().getObjThumb(itemsList.get(i).getFoto());
+                    final int finalI = i;
+                    imgCall.enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if(response.body() != null){
+                                itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                            } else {
+                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                        }
+                    });
+                }
+//                itemList.clear();
+//                itemList.addAll(itemsList);
+                if(itemsList.size() == limit){
+                    itemsList.add(null);
+                }
+
+                recyclerListAdapter.removeLastItem();
+                recyclerListAdapter.setLoaded();
+                recyclerListAdapter.update(itemsList);
+
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<RecyclerViewItem>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void loadDataName(final String query){
+        searchNameCall = new RetrofitConfig().searchByNameRequest().searchByName(query, "deleted","0", String.valueOf(limit));
+        searchNameCall.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
+            @Override
+            public void onResponse(Call<ArrayList<RecyclerViewItem>> call, Response<ArrayList<RecyclerViewItem>> response) {
+                final ArrayList<RecyclerViewItem> itemsList = response.body();
+                for(int i=0 ; i<itemsList.size() ; i++){
+                    Call<ResponseBody> imgCall = new RetrofitConfig().getObjThumbRequest().getObjThumb(itemsList.get(i).getFoto());
+                    final int finalI = i;
+                    imgCall.enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if(response.body() != null){
+                                itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                            } else {
+                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                        }
+                    });
+                }
+                itemList.clear();
+                itemList.addAll(itemsList);
+                if(itemsList.size() == limit){
+                    Log.e("teste","NULL");
+                    itemList.add(null);
+                }
+                recyclerListAdapter = new DeletedRecyclerListAdapter(getApplicationContext(), (ArrayList<RecyclerViewItem>)  itemList, DeletedObjListActivity.this, new OnLoadMoreListener() {
+                    @Override
+                    public void onLoadMore(int position) {
+                        loadMoreDataName(query, position);
+                    }
+                });
+                recyclerView.setItemAnimator(new DefaultItemAnimator());
+                recyclerView.setAdapter(recyclerListAdapter);
+                recyclerView.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.GONE);
+                recyclerView.scrollToPosition(0);
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<RecyclerViewItem>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void loadMoreDataName(String query, int skip){
+        Call<ArrayList<RecyclerViewItem>> call = new RetrofitConfig().searchByNameRequest().searchByName(query, "deleted",String.valueOf(skip), String.valueOf(limit));
+        call.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
+            @Override
+            public void onResponse(Call<ArrayList<RecyclerViewItem>> call, Response<ArrayList<RecyclerViewItem>> response) {
+                final ArrayList<RecyclerViewItem> itemsList = response.body();
+                for(int i=0 ; i<itemsList.size() ; i++){
+                    Call<ResponseBody> imgCall = new RetrofitConfig().getObjThumbRequest().getObjThumb(itemsList.get(i).getFoto());
+                    final int finalI = i;
+                    imgCall.enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if(response.body() != null){
+                                itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                            } else {
+                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                        }
+                    });
+                }
+//                itemList.clear();
+//                itemList.addAll(itemsList);
+                if(itemsList.size() == limit){
+                    itemsList.add(null);
+                }
+
+                recyclerListAdapter.removeLastItem();
+                recyclerListAdapter.setLoaded();
+                recyclerListAdapter.update(itemsList);
+
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<RecyclerViewItem>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void loadDataDate(final String dateStart, final String dateEnd){
+        searchDateCall = new RetrofitConfig().searchByDateRequest().searchByDate("deleted",dateStart,dateEnd,"0", String.valueOf(limit));
+        searchDateCall.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
+            @Override
+            public void onResponse(Call<ArrayList<RecyclerViewItem>> call, Response<ArrayList<RecyclerViewItem>> response) {
+                final ArrayList<RecyclerViewItem> filteredItems = response.body();
+                for(int i=0 ; i<filteredItems.size() ; i++){
+                    Call<ResponseBody> imgCall = new RetrofitConfig().getObjThumbRequest().getObjThumb(filteredItems.get(i).getFoto());
+                    final int finalI = i;
+                    imgCall.enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if(response.body() != null){
+                                filteredItems.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                            } else {
+                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        filteredItems.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                        }
+                    });
+                }
+                itemList.clear();
+                itemList.addAll(filteredItems);
+                if(filteredItems.size() == limit){
+                    Log.e("teste","NULL");
+                    itemList.add(null);
+                }
+                recyclerListAdapter = new DeletedRecyclerListAdapter(getApplicationContext(), (ArrayList<RecyclerViewItem>)  itemList, DeletedObjListActivity.this, new OnLoadMoreListener() {
+                    @Override
+                    public void onLoadMore(int position) {
+                        loadMoreDataDate(dateStart, dateEnd, position);
+                    }
+                });
+                recyclerView.setItemAnimator(new DefaultItemAnimator());
+                recyclerView.setAdapter(recyclerListAdapter);
+                progressBar.setVisibility(View.GONE);
+                Log.e("tamanho lista filtro", ""+filteredItems.size());
+                recyclerView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<RecyclerViewItem>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void loadMoreDataDate(String dateStart, String dateEnd, int skip){
+        searchDateCall = new RetrofitConfig().searchByDateRequest().searchByDate("deleted",dateStart,dateEnd,String.valueOf(skip),String.valueOf(limit));
+        searchDateCall.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
+            @Override
+            public void onResponse(Call<ArrayList<RecyclerViewItem>> call, Response<ArrayList<RecyclerViewItem>> response) {
+                final ArrayList<RecyclerViewItem> itemsList = response.body();
+                for(int i=0 ; i<itemsList.size() ; i++){
+                    Call<ResponseBody> imgCall = new RetrofitConfig().getObjThumbRequest().getObjThumb(itemsList.get(i).getFoto());
+                    final int finalI = i;
+                    imgCall.enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if(response.body() != null){
+                                itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                            } else {
+                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                        }
+                    });
+                }
+//                itemList.clear();
+//                itemList.addAll(itemsList);
+                if(itemsList.size() == limit){
+                    itemsList.add(null);
+                }
+
+                recyclerListAdapter.removeLastItem();
+                recyclerListAdapter.setLoaded();
+                recyclerListAdapter.update(itemsList);
+
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<RecyclerViewItem>> call, Throwable t) {
+
+            }
+        });
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_list_obj,menu);
-        final MenuItem searchItem = menu.findItem(R.id.search_btn);
+        searchItem = menu.findItem(R.id.search_btn);
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setOnQueryTextListener(this);
+        searchItem.setVisible(false);
 
         searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
@@ -117,10 +507,22 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                recyclerListAdapter.getSortedList().clear();
-                for(int k=0 ; k<recyclerListAdapter.getSortedListBackup().size() ; k++){
-                    recyclerListAdapter.restoreItem(recyclerListAdapter.getSortedListBackup().get(k));
+                if(searchNameCall.isExecuted()){
+                    searchNameCall.cancel();
                 }
+//                List<RecyclerViewItem> backupListCopy = new ArrayList<RecyclerViewItem>();
+//                backupListCopy.addAll(recyclerListAdapter.getItemListBackup());
+//                recyclerListAdapter.setItemList(backupListCopy);
+//                if(recyclerListAdapter.getItemList().size() < totalObjNum){
+//                    recyclerListAdapter.getItemList().add(null);
+//                }
+//                recyclerListAdapter.notifyDataSetChanged();
+//                if(progressBar.getVisibility() == View.VISIBLE){
+//                    progressBar.setVisibility(View.GONE);
+//                    recyclerView.setVisibility(View.VISIBLE);
+//                }
+//                fabDate.setVisibility(View.VISIBLE);
+                loadData();
                 return true;
             }
         });
@@ -143,36 +545,9 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
     @Override
     protected void onResume() {
         super.onResume();
-        try {
-            ArrayList<RecyclerViewItem> itemsArrayList = new GetAllObjRequest().execute("deleted").get();
-            if(itemsArrayList != null) {
-                Log.e("tamanho do array", String.valueOf(itemsArrayList.size()));
-                for (int i = 0; i < itemsArrayList.size(); i++) {
-                    //itemsArrayList.get(i).setImg(new GetObjImgRequest(itemsArrayList.get(i).getFoto()).execute().get());
-                }
-                ObjectListSingleton.getInstance().setObjectList(itemsArrayList);
-                recyclerListAdapter = new DeletedRecyclerListAdapter(this, ObjectListSingleton.getInstance().getObjectList(), this);
-                recyclerView.setItemAnimator(new DefaultItemAnimator());
-                recyclerView.setAdapter(recyclerListAdapter);
-
-                fabDate.setImageResource(R.drawable.ic_calendar);
-                fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
-                isFabSeted = false;
-
-                for (int k = 0; k < recyclerListAdapter.getSortedList().size(); k++) {
-                    recyclerListAdapter.getSortedListBackup().add(recyclerListAdapter.getSortedList().get(k));
-                }
-            }else{
-                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
-                finish();
-            }
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        //listView.setAdapter(new ObjectListAdapter(ObjectListSingleton.getInstance().getObjectList(),this));
+        fabDate.setImageResource(R.drawable.ic_calendar);
+        fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
+        isFabSeted = false;
     }
 
     @Override
@@ -186,8 +561,9 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
                 SessionManager.getInstance().toLoginActivity();
                 finish();
             } else {
-                for (int i = 0; i < restoredItems.size(); i++) {
-                    new RestoreObjRequest().execute(restoredItems.get(i).getCodigo());
+                String deleteOperator = UserSingleton.getInstance().getNome();
+                for (int i = 0; i < deletedItems.size(); i++) {
+                    new RestoreObjRequest().execute(deletedItems.get(i).getCodigo(), deletedItems.get(i).getFoto(), deleteOperator);
                 }
             }
         } catch (InterruptedException e) {
@@ -198,9 +574,9 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
     }
 
     @Override
-    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
+    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, final int position) {
         if(viewHolder instanceof DeletedRecyclerListAdapter.MyViewHolder){
-            SortedList<RecyclerViewItem> itemList = recyclerListAdapter.getSortedList();
+            List<RecyclerViewItem> itemList = recyclerListAdapter.getItemList();
 
             //get the removed item name to display it in snack bar
             String name = itemList.get(viewHolder.getAdapterPosition()).getNome();
@@ -210,16 +586,16 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
 
             //remove the item from recycler view
             recyclerListAdapter.removeItem(viewHolder.getAdapterPosition());
-            restoredItems.add(deletedItem);
+            deletedItems.add(deletedItem);
 
             //showing snack bar with Undo option
-            Snackbar snackbar = Snackbar.make(coordinatorLayout, "Este objeto foi restaurado.", Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(coordinatorLayout, name + " restaurado", Snackbar.LENGTH_LONG);
             snackbar.setAction("DESFAZER", new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     //restore the deleted item
-                    recyclerListAdapter.restoreItem(deletedItem);
-                    restoredItems.remove(restoredItems.size()-1);
+                    recyclerListAdapter.restoreItem(deletedItem, position);
+                    deletedItems.remove(deletedItems.size()-1);
                 }
             });
             snackbar.show();
@@ -228,23 +604,27 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        try {
-            final ArrayList<RecyclerViewItem> filteredModelList = new SearchObjByNameRequest().execute(query,"deleted").get();
-            if(filteredModelList != null){
-                for (int i=0 ; i<filteredModelList.size() ; i++){
-                    //filteredModelList.get(i).setImg(new GetObjImgRequest(filteredModelList.get(i).getFoto()).execute().get());
-                }
-            }
-            recyclerListAdapter.replaceAll(filteredModelList);
-            recyclerListAdapter.getFilteredItemsByName().addAll(filteredModelList);
-            recyclerView.scrollToPosition(0);
-            return true;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        return false;
+        recyclerView.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+        fabDate.setVisibility(View.GONE);
+        loadDataName(query);
+//        try {
+//            final ArrayList<RecyclerViewItem> filteredModelList = new SearchObjByNameRequest().execute(query,"non_deleted").get();
+//            if(filteredModelList != null){
+//                for (int i=0 ; i<filteredModelList.size() ; i++){
+//                    filteredModelList.get(i).setImg(new GetObjImgRequest(filteredModelList.get(i).getFoto()).execute().get());
+//                }
+//            }
+//            recyclerListAdapter.replaceAll(filteredModelList);
+//            recyclerListAdapter.getFilteredItemsByName().addAll(filteredModelList);
+//            recyclerView.scrollToPosition(0);
+//            return true;
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
+        return true;
     }
 
     @Override
@@ -290,8 +670,8 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
             enableActionMode(position);
         }else{
             try {
-                Item item = new GetObjDataRequest(recyclerListAdapter.getSortedList().get(position).getCodigo(),this).execute().get();
-                item.setImg(new GetObjImgRequest(recyclerListAdapter.getSortedList().get(position).getFoto()).execute().get());
+                Item item = new GetObjDataRequest(recyclerListAdapter.getItemList().get(position).getCodigo(),this).execute().get();
+                item.setImg(new GetObjImgRequest(recyclerListAdapter.getItemList().get(position).getFoto()).execute().get());
                 ItemSingleton.getInstance().setItemSingleton(item);
                 startActivity(new Intent(this,DeletedObjActivity.class));
             } catch (InterruptedException e) {
@@ -391,10 +771,10 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
     // deleting the messages from recycler view
     private void deleteItems() {
         recyclerListAdapter.resetAnimationIndex();
-        List<Integer> selectedItemPositions =
+        final List<Integer> selectedItemPositions =
                 recyclerListAdapter.getSelectedItems();
         for (int i = selectedItemPositions.size() - 1; i >= 0; i--) {
-            restoredItems.add(recyclerListAdapter.getSortedList().get(selectedItemPositions.get(i)));
+            deletedItems.add(recyclerListAdapter.getItemList().get(selectedItemPositions.get(i)));
             recyclerListAdapter.removeItem(selectedItemPositions.get(i));
         }
 
@@ -402,10 +782,15 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
         snackbar.setAction("DESFAZER", new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                for (RecyclerViewItem item : restoredItems) {
-                    recyclerListAdapter.restoreItem(item);
+                int j = deletedItems.size() - 1;
+                for(int i=0 ; i<selectedItemPositions.size() ; i++){
+                    recyclerListAdapter.restoreItem(deletedItems.get(j), selectedItemPositions.get(i));
+                    j--;
                 }
-                restoredItems.clear();
+//                    for (RecyclerViewItem item : deletedItems) {
+//                        recyclerListAdapter.restoreItem(item);
+//                    }
+                deletedItems.clear();
             }
         });
         snackbar.show();
@@ -414,99 +799,99 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
     }
 
     public void filterDate(View view) {
-//        if (!isFabSeted) {
-//            LayoutInflater layoutInflater = getLayoutInflater();
-//            View v = layoutInflater.inflate(R.layout.date_dialog, null);
-//
-//            final DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-//
-//            dateStart = v.findViewById(R.id.startDate);
-//            dateEnd = v.findViewById(R.id.endDate);
-//            dateStart.setText(dateFormat.format(calendarStart.getTime()));
-//            dateEnd.setText(dateFormat.format(calendarEnd.getTime()));
-//
-//            dateStart.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
-//                        @Override
-//                        public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-//                            calendarStart.set(Calendar.YEAR, i);
-//                            calendarStart.set(Calendar.MONTH, i1);
-//                            calendarStart.set(Calendar.DAY_OF_MONTH, i2);
-//                            dateStart.setText(dateFormat.format(calendarStart.getTime()));
-//                        }
-//                    }, calendarStart.get(Calendar.YEAR), calendarStart.get(Calendar.MONTH), calendarStart.get(Calendar.DAY_OF_MONTH));
-//                    datePickerDialog.show();
-//                }
-//            });
-//
-//            dateEnd.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
-//                        @Override
-//                        public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-//                            calendarEnd.set(Calendar.YEAR, i);
-//                            calendarEnd.set(Calendar.MONTH, i1);
-//                            calendarEnd.set(Calendar.DAY_OF_MONTH, i2);
-//                            dateEnd.setText(dateFormat.format(calendarEnd.getTime()));
-//                        }
-//                    }, calendarEnd.get(Calendar.YEAR), calendarEnd.get(Calendar.MONTH), calendarEnd.get(Calendar.DAY_OF_MONTH));
-//                    datePickerDialog.show();
-//                }
-//            });
-//
-//            AlertDialog alertDialog;
-//            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//            builder.setTitle("Pesquisar por data");
-//            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-//                @Override
-//                public void onClick(DialogInterface dialogInterface, int i) {
-//                    ArrayList<RecyclerViewItem> filteredItems = new ArrayList<>();
-//                    Item dateStart = new Item();
-//                    Item dateEnd = new Item();
-//                    dateStart.setDia(calendarStart.get(Calendar.DAY_OF_MONTH));
-//                    dateStart.setMes(calendarStart.get(Calendar.MONTH) + 1);
-//                    dateStart.setAno(calendarStart.get(Calendar.YEAR));
-//                    dateEnd.setDia(calendarEnd.get(Calendar.DAY_OF_MONTH));
-//                    dateEnd.setMes(calendarEnd.get(Calendar.MONTH) + 1);
-//                    dateEnd.setAno(calendarEnd.get(Calendar.YEAR));
-//                    itemList = recyclerListAdapter.getSortedListBackup();
-//                    for (int k = 0; k < itemList.size(); k++) {
-//                        Log.e("data Inicio",dateStart.getDia() + "/" + dateStart.getMes() + "/" + dateStart.getAno());
-//                        Log.e("data Item",itemList.get(k).getDia() + "/" + itemList.get(k).getMes() + "/" + itemList.get(k).getAno());
-//                        Log.e("data Final",dateEnd.getDia() + "/" + dateEnd.getMes() + "/" + dateEnd.getAno());
-//                        if ((itemList.get(k).compareItemDate(dateStart) >= 0) && (itemList.get(k).compareItemDate(dateEnd) <= 0)) {
-//                            Log.e("if",""+itemList.get(k).compareItemDate(dateStart) + " - " + itemList.get(k).compareItemDate(dateEnd));
-//                            filteredItems.add(itemList.get(k));
-//                            recyclerListAdapter.getFilteredItemsByDate().add(itemList.get(k));
-//                        }
-//                    }
-//                    fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dark_red)));
-//                    fabDate.setImageResource(R.drawable.ic_close);
-//                    isFabSeted = true;
-//                    Log.e("tamanho lista filtro", ""+filteredItems.size());
-//                    recyclerListAdapter.replaceAll(filteredItems);
-//                }
-//            });
-//            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-//                @Override
-//                public void onClick(DialogInterface dialogInterface, int i) {
-//                }
-//            });
-//            builder.setView(v);
-//            alertDialog = builder.create();
-//            alertDialog.show();
-//        } else {
-//            recyclerListAdapter.getSortedList().clear();
-//            for(int k=0 ; k<recyclerListAdapter.getSortedListBackup().size() ; k++){
-//                recyclerListAdapter.restoreItem(recyclerListAdapter.getSortedListBackup().get(k));
+        if (!isFabSeted) {
+            LayoutInflater layoutInflater = getLayoutInflater();
+            View v = layoutInflater.inflate(R.layout.date_dialog, null);
+
+            final DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+            dateStart = v.findViewById(R.id.startDate);
+            dateEnd = v.findViewById(R.id.endDate);
+            dateStart.setText(dateFormat.format(calendarStart.getTime()));
+            dateEnd.setText(dateFormat.format(calendarEnd.getTime()));
+
+            dateStart.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                            calendarStart.set(Calendar.YEAR, i);
+                            calendarStart.set(Calendar.MONTH, i1);
+                            calendarStart.set(Calendar.DAY_OF_MONTH, i2);
+                            dateStart.setText(dateFormat.format(calendarStart.getTime()));
+                        }
+                    }, calendarStart.get(Calendar.YEAR), calendarStart.get(Calendar.MONTH), calendarStart.get(Calendar.DAY_OF_MONTH));
+                    datePickerDialog.show();
+                }
+            });
+
+            dateEnd.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                            calendarEnd.set(Calendar.YEAR, i);
+                            calendarEnd.set(Calendar.MONTH, i1);
+                            calendarEnd.set(Calendar.DAY_OF_MONTH, i2);
+                            dateEnd.setText(dateFormat.format(calendarEnd.getTime()));
+                        }
+                    }, calendarEnd.get(Calendar.YEAR), calendarEnd.get(Calendar.MONTH), calendarEnd.get(Calendar.DAY_OF_MONTH));
+                    datePickerDialog.show();
+                }
+            });
+
+            AlertDialog alertDialog;
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Pesquisar por data");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dark_red)));
+                    fabDate.setImageResource(R.drawable.ic_close);
+                    isFabSeted = true;
+
+                    String dateStart = DateHandler.toSqlDate(calendarStart.getTime());
+                    String dateEnd = DateHandler.toSqlDate(calendarEnd.getTime());
+
+                    recyclerView.setVisibility(View.GONE);
+                    progressBar.setVisibility(View.VISIBLE);
+                    searchItem.setVisible(false);
+
+                    loadDataDate(dateStart,dateEnd);
+
+
+                }
+            });
+            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                }
+            });
+            builder.setView(v);
+            alertDialog = builder.create();
+            alertDialog.show();
+        } else {
+            if(searchDateCall.isExecuted()){
+                searchDateCall.cancel();
+            }
+//            recyclerListAdapter.replaceAll((ArrayList<RecyclerViewItem>) recyclerListAdapter.getItemListBackup());
+//            if(recyclerListAdapter.getItemList().size() < totalObjNum){
+//                recyclerListAdapter.getItemList().add(null);
 //            }
 //            recyclerListAdapter.getFilteredItemsByDate().clear();
-//            fabDate.setImageResource(R.drawable.ic_calendar);
-//            fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
-//            isFabSeted = false;
-//        }
+            fabDate.setImageResource(R.drawable.ic_calendar);
+            fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
+            searchItem.setVisible(true);
+            isFabSeted = false;
+//            if(recyclerView.getVisibility() == View.GONE){
+//                progressBar.setVisibility(View.GONE);
+//                recyclerView.setVisibility(View.VISIBLE);
+//            }
+            loadData();
+        }
     }
+
+
 }
