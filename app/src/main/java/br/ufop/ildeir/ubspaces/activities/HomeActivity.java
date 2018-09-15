@@ -11,9 +11,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.JsonObject;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
@@ -23,6 +26,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.R;
+import br.ufop.ildeir.ubspaces.network.RetrofitConfig;
 import br.ufop.ildeir.ubspaces.objects.Item;
 import br.ufop.ildeir.ubspaces.requests.ClearUserTokenRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetMetadataRequest;
@@ -32,6 +36,9 @@ import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 import br.ufop.ildeir.ubspaces.singleton.UserSingleton;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -45,6 +52,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private TextView monthObjNum;
 
     private IntentIntegrator intentIntegrator;
+
+    private ProgressBar progressBar;
+    private LinearLayout linearLayout;
 
     private static int SCAN_REQUEST_CODE = 1;
 
@@ -76,6 +86,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         intentIntegrator = new IntentIntegrator(this);
+
+        progressBar = findViewById(R.id.progress_bar);
+        linearLayout = findViewById(R.id.card_layout);
 
     }
 
@@ -184,16 +197,26 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onStart() {
         super.onStart();
-        try {
-            ArrayList<String> dataArray = new GetMetadataRequest().execute(SessionManager.getInstance().getUserId()).get();
-            userObjNum.setText(dataArray.get(0));
-            totalObjNum.setText(dataArray.get(1));
-            monthObjNum.setText(dataArray.get(2));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        linearLayout.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+        String userId = SessionManager.getInstance().getUserId();
+        Call<JsonObject> call = new RetrofitConfig().getMetadataRequest().getMetadata(userId);
+        call.enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                JsonObject object = response.body();
+                userObjNum.setText(object.get("num_obj_user").getAsString());
+                totalObjNum.setText(object.get("num_obj").getAsString());
+                monthObjNum.setText(object.get("num_obj_month").getAsString());
+                progressBar.setVisibility(View.GONE);
+                linearLayout.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+
+            }
+        });
     }
 
     @Override

@@ -153,18 +153,18 @@ public class CadastrarObjActivity extends AppCompatActivity {
             calendar.set(Calendar.YEAR, savedInstanceState.getInt("year"));
         }
 
-        try {
-            String user = new GetUserRequest(SessionManager.getInstance().getUserId()).execute().get();
-            if(user == null){
-                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
-                SessionManager.getInstance().toLoginActivity();
-                finish();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            String user = new GetUserRequest(SessionManager.getInstance().getUserId()).execute().get();
+//            if(user == null){
+//                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
+//                SessionManager.getInstance().toLoginActivity();
+//                finish();
+//            }
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);

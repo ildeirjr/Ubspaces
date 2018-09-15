@@ -14,7 +14,7 @@
         android:layout_marginStart="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="28dp">
+        tools:layout_editor_absoluteY="0dp">
 
         <TextView
             android:id="@+id/textView"
@@ -55,40 +55,73 @@
             app:layout_constraintTop_toBottomOf="@+id/usrEmail"
             tools:layout_editor_absoluteX="0dp" />
 
-        <Button
-            android:id="@+id/btnLogin"
+        <LinearLayout
+            android:id="@+id/login_buttons_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
-            android:background="@color/colorAccent"
-            android:text="Entrar"
-            android:textColor="#FFF"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/usrPass"
-            tools:layout_editor_absoluteX="0dp"
-            android:onClick="login"/>
+            tools:layout_editor_absoluteX="0dp">
 
-        <Button
-            android:id="@+id/btnGoogle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="LER UM OBJETO"
-            app:layout_constraintTop_toBottomOf="@+id/textView2"
-            tools:layout_editor_absoluteX="0dp"
-            android:onClick="scan"/>
+            <Button
+                android:id="@+id/btnLogin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:background="@color/colorAccent"
+                android:onClick="login"
+                android:text="Entrar"
+                android:textColor="#FFF"
+                app:layout_constraintTop_toBottomOf="@+id/usrPass"
+                tools:layout_editor_absoluteX="0dp" />
 
-        <TextView
-            android:id="@+id/textView2"
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="20dp"
+                android:text="OU"
+                android:textColor="#FFF"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btnLogin" />
+
+            <Button
+                android:id="@+id/btnGoogle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:onClick="scan"
+                android:text="LER UM OBJETO"
+                app:layout_constraintTop_toBottomOf="@+id/textView2"
+                tools:layout_editor_absoluteX="0dp" />
+
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="20dp"
-            android:text="OU"
-            android:textColor="#FFF"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnLogin" />
+            android:layout_marginTop="8dp"
+            android:foregroundTint="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/login_buttons_layout"
+            app:layout_constraintStart_toStartOf="@+id/login_buttons_layout"
+            app:layout_constraintTop_toBottomOf="@+id/usrPass"
+            android:visibility="gone"/>
+
 
     </android.support.constraint.ConstraintLayout>
 

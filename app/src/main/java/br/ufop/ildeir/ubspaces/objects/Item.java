@@ -3,6 +3,8 @@ package br.ufop.ildeir.ubspaces.objects;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import com.google.gson.annotations.SerializedName;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,15 +19,21 @@ public class Item {
     private String codigo;
     private String nome;
     private String estado;
+
+    @SerializedName("data_entrada")
     private String dataEntrada;
     private String local;
     private String nota;
+
+    @SerializedName("quem_recebeu")
     private String recebeu;
     private String depto;
     private String descricao;
     private String unidade;
     private String foto;
     private String nomeUsrExclusao;
+
+    @SerializedName("tempo_exclusao")
     private String dataExclusao;
     private byte[] img;
 

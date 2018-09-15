@@ -504,9 +504,12 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                if(searchNameCall.isExecuted()){
-                    searchNameCall.cancel();
+                if(searchNameCall != null){
+                    if(searchNameCall.isExecuted()){
+                        searchNameCall.cancel();
+                    }
                 }
+
 //                List<RecyclerViewItem> backupListCopy = new ArrayList<RecyclerViewItem>();
 //                backupListCopy.addAll(recyclerListAdapter.getItemListBackup());
 //                recyclerListAdapter.setItemList(backupListCopy);
@@ -666,16 +669,22 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
         if(recyclerListAdapter.getSelectedItemCount() > 0){
             enableActionMode(position);
         }else{
-            try {
-                Item item = new GetObjDataRequest(recyclerListAdapter.getItemList().get(position).getCodigo(),this).execute().get();
-                item.setImg(new GetObjImgRequest(recyclerListAdapter.getItemList().get(position).getFoto()).execute().get());
-                ItemSingleton.getInstance().setItemSingleton(item);
-                startActivity(new Intent(this,VisualizarObjActivity.class));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                Item item = new GetObjDataRequest(recyclerListAdapter.getItemList().get(position).getCodigo(),this).execute().get();
+//                item.setImg(new GetObjImgRequest(recyclerListAdapter.getItemList().get(position).getFoto()).execute().get());
+//                ItemSingleton.getInstance().setItemSingleton(item);
+//                startActivity(new Intent(this,VisualizarObjActivity.class));
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            } catch (ExecutionException e) {
+//                e.printStackTrace();
+//            }
+            Bundle bundle = new Bundle();
+            bundle.putString("codigo", recyclerListAdapter.getItemList().get(position).getCodigo());
+            bundle.putString("foto", recyclerListAdapter.getItemList().get(position).getFoto());
+            Intent intent = new Intent(this, VisualizarObjActivity.class);
+            intent.putExtras(bundle);
+            startActivity(intent);
         }
     }
 

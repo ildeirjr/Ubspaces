@@ -1,4 +1,4 @@
-package br.ufop.ildeir.ubspaces.interfaces;
+package br.ufop.ildeir.ubspaces.network.requests.get;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;

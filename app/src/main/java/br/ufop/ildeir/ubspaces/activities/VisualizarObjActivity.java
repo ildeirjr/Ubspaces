@@ -8,21 +8,33 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.miscellaneous.DateHandler;
+import br.ufop.ildeir.ubspaces.network.RetrofitConfig;
+import br.ufop.ildeir.ubspaces.objects.Item;
 import br.ufop.ildeir.ubspaces.requests.delete.DeleteObjRequest;
+import br.ufop.ildeir.ubspaces.requests.get.GetObjImgRequest;
 import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 import br.ufop.ildeir.ubspaces.singleton.UserSingleton;
+import br.ufop.ildeir.ubspaces.utils.Utils;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class VisualizarObjActivity extends AppCompatActivity {
 
@@ -39,6 +51,9 @@ public class VisualizarObjActivity extends AppCompatActivity {
     private ImageView foto;
     private Bitmap img;
 
+    private ProgressBar progressBar;
+    private ScrollView scrollView;
+
     private SimpleDateFormat simpleDateFormat;
     private SimpleDateFormat sqlDateFormat;
 
@@ -47,18 +62,18 @@ public class VisualizarObjActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_visualizar_obj);
 
-        try {
-            String user = new GetUserRequest(SessionManager.getInstance().getUserId()).execute().get();
-            if(user == null){
-                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_LONG).show();
-                SessionManager.getInstance().toLoginActivity();
-                finish();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            String user = new GetUserRequest(SessionManager.getInstance().getUserId()).execute().get();
+//            if(user == null){
+//                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_LONG).show();
+//                SessionManager.getInstance().toLoginActivity();
+//                finish();
+//            }
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
 
         if(getSupportActionBar() != null){
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -77,22 +92,109 @@ public class VisualizarObjActivity extends AppCompatActivity {
         textUnidade = findViewById(R.id.textUnidade);
         foto = findViewById(R.id.imgView);
 
-        if(ItemSingleton.getInstance().getItemSingleton() != null){
-            textNome.setText(ItemSingleton.getInstance().getItemSingleton().getNome());
-            textCodigo.setText(ItemSingleton.getInstance().getItemSingleton().getCodigo());
-            textEstado.setText(ItemSingleton.getInstance().getItemSingleton().getEstado());
-            textDescricao.setText(ItemSingleton.getInstance().getItemSingleton().getDescricao());
-            textLocal.setText(ItemSingleton.getInstance().getItemSingleton().getLocal());
-            textDepto.setText(ItemSingleton.getInstance().getItemSingleton().getDepto());
-            textData.setText(DateHandler.sqlDateToString(ItemSingleton.getInstance().getItemSingleton().getDataEntrada()));
-            textRecebedor.setText(ItemSingleton.getInstance().getItemSingleton().getRecebeu());
-            textNota.setText(ItemSingleton.getInstance().getItemSingleton().getNota());
-            textUnidade.setText(ItemSingleton.getInstance().getItemSingleton().getUnidade());
-            img = BitmapFactory.decodeByteArray(ItemSingleton.getInstance().getItemSingleton().getImg(),0,ItemSingleton.getInstance().getItemSingleton().getImg().length);
-            foto.setImageBitmap(img);
-        }
+        progressBar = findViewById(R.id.progress_bar);
+        scrollView = findViewById(R.id.nestedScrollView);
+
+        Intent intent = getIntent();
+        String code = intent.getExtras().getString("codigo");
+        String imgPath = intent.getExtras().getString("foto");
+
+        scrollView.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+        loadObject(code, imgPath);
 
     }
+
+    public void loadObject(String code, final String imgPath){
+        Call<Item> call = new RetrofitConfig().getObjDataRequest().getObjData(code);
+        System.out.println(call.request().url().toString());
+        call.enqueue(new Callback<Item>() {
+            @Override
+            public void onResponse(Call<Item> call, Response<Item> response) {
+                final Item item = response.body();
+                Call<ResponseBody> imgCall = new RetrofitConfig().getObjImgRequest().getObjImg(imgPath);
+                imgCall.enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if(response.body() != null){
+                            try {
+                                item.setImg(response.body().bytes());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                            ItemSingleton.getInstance().setItemSingleton(item);
+                            Item itemSingleton = ItemSingleton.getInstance().getItemSingleton();
+                            if(itemSingleton != null){
+                                textNome.setText(itemSingleton.getNome());
+                                textCodigo.setText(itemSingleton.getCodigo());
+                                textEstado.setText(itemSingleton.getEstado());
+                                textDescricao.setText(itemSingleton.getDescricao());
+                                textLocal.setText(itemSingleton.getLocal());
+                                textDepto.setText(itemSingleton.getDepto());
+                                textData.setText(DateHandler.sqlDateToString(itemSingleton.getDataEntrada()));
+                                textRecebedor.setText(itemSingleton.getRecebeu());
+                                textNota.setText(itemSingleton.getNota());
+                                textUnidade.setText(itemSingleton.getUnidade());
+                                img = BitmapFactory.decodeByteArray(itemSingleton.getImg(),0, itemSingleton.getImg().length);
+                                foto.setImageBitmap(img);
+                            }
+                            progressBar.setVisibility(View.GONE);
+                            scrollView.setVisibility(View.VISIBLE);
+
+                        } else {
+                            Call<ResponseBody> imgCall = new RetrofitConfig().getObjImgRequest().getObjImg("default.jpg");
+                            imgCall.enqueue(new Callback<ResponseBody>() {
+                                @Override
+                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                    try {
+                                        item.setImg(response.body().bytes());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    ItemSingleton.getInstance().setItemSingleton(item);
+                                    Item itemSingleton = ItemSingleton.getInstance().getItemSingleton();
+                                    if(itemSingleton != null){
+                                        textNome.setText(itemSingleton.getNome());
+                                        textCodigo.setText(itemSingleton.getCodigo());
+                                        textEstado.setText(itemSingleton.getEstado());
+                                        textDescricao.setText(itemSingleton.getDescricao());
+                                        textLocal.setText(itemSingleton.getLocal());
+                                        textDepto.setText(itemSingleton.getDepto());
+                                        textData.setText(DateHandler.sqlDateToString(itemSingleton.getDataEntrada()));
+                                        textRecebedor.setText(itemSingleton.getRecebeu());
+                                        textNota.setText(itemSingleton.getNota());
+                                        textUnidade.setText(itemSingleton.getUnidade());
+                                        img = BitmapFactory.decodeByteArray(itemSingleton.getImg(),0, itemSingleton.getImg().length);
+                                        foto.setImageBitmap(img);
+                                    }
+                                    progressBar.setVisibility(View.GONE);
+                                    scrollView.setVisibility(View.VISIBLE);
+                                }
+
+                                @Override
+                                public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Call<Item> call, Throwable t) {
+
+            }
+        });
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
