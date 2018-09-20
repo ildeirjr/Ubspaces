@@ -1,5 +1,6 @@
 package br.ufop.ildeir.ubspaces.activities;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -22,6 +23,7 @@ import com.google.zxing.integration.android.IntentResult;
 
 import org.w3c.dom.Text;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
@@ -36,6 +38,7 @@ import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 import br.ufop.ildeir.ubspaces.singleton.UserSingleton;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -55,6 +58,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     private ProgressBar progressBar;
     private LinearLayout linearLayout;
+
+    private ProgressDialog progressDialog;
 
     private static int SCAN_REQUEST_CODE = 1;
 
@@ -89,6 +94,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         progressBar = findViewById(R.id.progress_bar);
         linearLayout = findViewById(R.id.card_layout);
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setMessage("Carregando");
+        progressDialog.setCancelable(false);
 
     }
 
@@ -158,27 +168,74 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Intent showObject = new Intent(this,VisualizarObjActivity.class);
-        Intent objNotFound = new Intent(this,ObjNotFoundActivity.class);
+        final Intent showObject = new Intent(this,VisualizarObjActivity.class);
+        final Intent objNotFound = new Intent(this,ObjNotFoundActivity.class);
         showObject.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode,resultCode,data);
         if(intentResult != null){
             if(intentResult.getContents() != null){
-                try {
-                    Log.e("result",intentResult.getContents());
-                    Item item = new GetObjDataRequest(intentResult.getContents(),this).execute().get();
-                    if(item != null){
-                        item.setImg(new GetObjImgRequest(item.getFoto()).execute().get());
-                        ItemSingleton.getInstance().setItemSingleton(item);
-                        startActivity(showObject);
-                    }else{
-                        startActivity(objNotFound);
+                progressDialog.show();
+                Call<Item> call = new RetrofitConfig().getObjDataRequest().getObjData(intentResult.getContents());
+                call.enqueue(new Callback<Item>() {
+                    @Override
+                    public void onResponse(Call<Item> call, Response<Item> response) {
+                        final Item item = response.body();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("codigo", item.getCodigo());
+                        bundle.putString("foto", item.getFoto());
+                        showObject.putExtras(bundle);
+                        Log.e("teste","nao é null");
+                        Call<ResponseBody> imgCall = new RetrofitConfig().getObjImgRequestForComumUser().getObjImg(item.getFoto());
+                        imgCall.enqueue(new Callback<ResponseBody>() {
+                            @Override
+                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                if(response.body() != null){
+                                    try {
+                                        item.setImg(response.body().bytes());
+                                        ItemSingleton.getInstance().setItemSingleton(item);
+                                        startActivity(showObject);
+                                        progressDialog.dismiss();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else {
+                                    Call<ResponseBody> imgCall = new RetrofitConfig().getObjImgRequestForComumUser().getObjImg("default.jpg");
+                                    imgCall.enqueue(new Callback<ResponseBody>() {
+                                        @Override
+                                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                            if(response.body() != null){
+                                                try {
+                                                    item.setImg(response.body().bytes());
+                                                    ItemSingleton.getInstance().setItemSingleton(item);
+                                                    startActivity(showObject);
+                                                    progressDialog.dismiss();
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                        }
+                                    });
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                            }
+                        });
                     }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
+
+                    @Override
+                    public void onFailure(Call<Item> call, Throwable t) {
+                        startActivity(objNotFound);
+                        progressDialog.dismiss();
+                    }
+                });
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);

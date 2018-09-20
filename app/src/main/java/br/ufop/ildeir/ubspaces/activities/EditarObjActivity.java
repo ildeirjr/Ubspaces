@@ -1,7 +1,10 @@
 package br.ufop.ildeir.ubspaces.activities;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -39,10 +42,17 @@ import java.util.concurrent.ExecutionException;
 import br.ufop.ildeir.ubspaces.miscellaneous.DateDialog;
 import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.miscellaneous.DateHandler;
+import br.ufop.ildeir.ubspaces.network.RetrofitConfig;
 import br.ufop.ildeir.ubspaces.objects.Item;
 import br.ufop.ildeir.ubspaces.requests.post.EditObjDataRequest;
 import br.ufop.ildeir.ubspaces.requests.post.PostObjImgRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class EditarObjActivity extends AppCompatActivity {
@@ -135,6 +145,8 @@ public class EditarObjActivity extends AppCompatActivity {
     private boolean imgSeted;
 
     private IntentIntegrator intentIntegrator;
+
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -303,8 +315,9 @@ public class EditarObjActivity extends AppCompatActivity {
 
         intentIntegrator = new IntentIntegrator(this);
 
-
-
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Carregando");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
     }
 
     private void initDeptSpinner(String dept, String[] depts){
@@ -345,59 +358,114 @@ public class EditarObjActivity extends AppCompatActivity {
                         !validarCampo(etRecebedor)){
                     return true;
                 }else {
-                    JSONObject jsonImg = new JSONObject();
-                    String sqlDate = DateHandler.toSqlDate(calendar.getTime());
-                    Log.e("data",sqlDate);
-                    itemSingleton.setCodigo(etCodigo.getEditText().getText().toString());
-                    itemSingleton.setNome(etNome.getEditText().getText().toString());
-                    itemSingleton.setEstado(stateSpinner.getSelectedItem().toString());
-                    itemSingleton.setDescricao(etDescricao.getEditText().getText().toString());
-                    itemSingleton.setLocal(etLocal.getEditText().getText().toString());
-                    itemSingleton.setDepto(deptSpinner.getSelectedItem().toString());
-                    itemSingleton.setDataEntrada(sqlDate);
-                    itemSingleton.setRecebeu(etRecebedor.getEditText().getText().toString());
-                    itemSingleton.setNota(etNota.getEditText().getText().toString());
-                    itemSingleton.setUnidade(unitSpinner.getSelectedItem().toString());
-                    if(!itemSingleton.getFoto().equals("null.jpg") || imgSeted){
-                        itemSingleton.setFoto(etNome.getEditText().getText().toString().replaceAll(" ", "_") + "_" + etCodigo.getEditText().getText().toString() + ".jpg");
-                        try {
-                            Log.e("teste", "ENTROU NO IMGSETED");
-                            itemSingleton.setImg(bmpToByteArray());
-                            jsonImg.put("nome", itemSingleton.getFoto());
-                            jsonImg.put("img", bmptoString());
-                            createImgThumb();
-                            jsonImg.put("imgThumb", Base64.encodeToString(bmpToByteArray(), Base64.DEFAULT));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    showConfirmDialog();
+                }
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void escolherImagem(View view) {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(intent,IMG_REQUEST);
+    }
+
+    public void showConfirmDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Confirma as alterações?");
+        builder.setPositiveButton("SIM", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                progressDialog.show();
+                final JSONObject jsonImg = new JSONObject();
+                String sqlDate = DateHandler.toSqlDate(calendar.getTime());
+                Log.e("data",sqlDate);
+                itemSingleton.setCodigo(etCodigo.getEditText().getText().toString());
+                itemSingleton.setNome(etNome.getEditText().getText().toString());
+                itemSingleton.setEstado(stateSpinner.getSelectedItem().toString());
+                itemSingleton.setDescricao(etDescricao.getEditText().getText().toString());
+                itemSingleton.setLocal(etLocal.getEditText().getText().toString());
+                itemSingleton.setDepto(deptSpinner.getSelectedItem().toString());
+                itemSingleton.setDataEntrada(sqlDate);
+                itemSingleton.setRecebeu(etRecebedor.getEditText().getText().toString());
+                itemSingleton.setNota(etNota.getEditText().getText().toString());
+                itemSingleton.setUnidade(unitSpinner.getSelectedItem().toString());
+                if(!itemSingleton.getFoto().equals("null.jpg") || imgSeted){
+                    itemSingleton.setFoto(etNome.getEditText().getText().toString().replaceAll(" ", "_") + "_" + etCodigo.getEditText().getText().toString() + ".jpg");
                     try {
-                        JSONObject jsonObject = itemSingleton.ItemtoJSON();
-                        jsonObject.put("codigoAntigo",codigoAntigo);
-                        jsonObject.put("fotoAntigo",fotoAntigo);
-                        if(!fotoAntigo.equals(itemSingleton.getFoto())){
-                            jsonObject.put("imgDelete","true");
-                        } else {
-                            jsonObject.put("imgDelete","false");
-                        }
-                        System.out.println(jsonObject.toString());
-                        String result = new EditObjDataRequest(jsonObject.toString()).execute().get();
-                        if(result.equals("401")){
-                            Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_LONG).show();
-                            finish();
-                        }
-                        if(!fotoAntigo.equals(itemSingleton.getFoto()) || imgSeted){
-                            new PostObjImgRequest(jsonImg.toString(),this).execute();
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
+                        Log.e("teste", "ENTROU NO IMGSETED");
+                        itemSingleton.setImg(bmpToByteArray());
+                        jsonImg.put("nome", itemSingleton.getFoto());
+                        jsonImg.put("img", bmptoString());
+                        createImgThumb();
+                        jsonImg.put("imgThumb", Base64.encodeToString(bmpToByteArray(), Base64.DEFAULT));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
+                }
+                try {
+                    JSONObject jsonObject = itemSingleton.ItemtoJSON();
+                    jsonObject.put("codigoAntigo",codigoAntigo);
+                    jsonObject.put("fotoAntigo",fotoAntigo);
+                    if(!fotoAntigo.equals(itemSingleton.getFoto())){
+                        jsonObject.put("imgDelete","true");
+                    } else {
+                        jsonObject.put("imgDelete","false");
+                    }
+                    final Intent it = new Intent(getApplicationContext(), VisualizarObjActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("codigo",itemSingleton.getCodigo());
+                    bundle.putString("foto",itemSingleton.getFoto());
+                    it.putExtras(bundle);
+//                        System.out.println(jsonObject.toString());
+//                        String result = new EditObjDataRequest(jsonObject.toString()).execute().get();
+//                        if(result.equals("401")){
+//                            Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_LONG).show();
+//                            finish();
+//                        }
+                    RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+                    Call<ResponseBody> call = new RetrofitConfig().editObjDataRequest().editObjData(body);
+                    call.enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if(!fotoAntigo.equals(itemSingleton.getFoto()) || imgSeted){
+//                                    new PostObjImgRequest(jsonImg.toString(),this).execute();
+                                RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonImg.toString());
+                                Call<ResponseBody> imgCall = new RetrofitConfig().postObjImgRequest().postObjImg(body);
+                                imgCall.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        progressDialog.dismiss();
+                                        Toast.makeText(EditarObjActivity.this, "Alterações realizadas com sucesso!", Toast.LENGTH_SHORT).show();
+                                        startActivity(it);
+                                        finish();
+                                    }
 
-                    Intent it = new Intent(this, VisualizarObjActivity.class);
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                        t.printStackTrace();
+                                    }
+                                });
+                            } else {
+                                progressDialog.dismiss();
+                                Toast.makeText(EditarObjActivity.this, "Alterações realizadas com sucesso!", Toast.LENGTH_SHORT).show();
+                                startActivity(it);
+                                finish();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            t.printStackTrace();
+                        }
+                    });
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
 //                    Bundle bundle = new Bundle();
 //                    bundle.putString("cod", etCodigo.getEditText().getText().toString());
 //                    bundle.putString("nome", etNome.getEditText().getText().toString());
@@ -411,19 +479,19 @@ public class EditarObjActivity extends AppCompatActivity {
 //                    bundle.putString("nota", etNota.getEditText().getText().toString());
 //                    bundle.putByteArray("img", bmpToByteArray());
 //                    it.putExtras(bundle);
-                    startActivity(it);
-                    finish();
-                }
+//                    startActivity(it);
+//                    finish();
+            }
+        });
+        builder.setNegativeButton("NÃO", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
 
-        }
-        return super.onOptionsItemSelected(item);
-    }
+            }
+        });
 
-    public void escolherImagem(View view) {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent,IMG_REQUEST);
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     @Override

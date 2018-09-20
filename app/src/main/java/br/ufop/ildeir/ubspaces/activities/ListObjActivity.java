@@ -124,15 +124,12 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
         fabDate = findViewById(R.id.fabDateSearch);
 
         progressBar = findViewById(R.id.progress_bar);
-
-        progressBar.setVisibility(View.VISIBLE);
-
-        loadData();
     }
 
     public void loadData(){
         recyclerView.setVisibility(View.GONE);
         fabDate.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
         Call<ArrayList<RecyclerViewItem>> call = new RetrofitConfig().getObjListRequest().getObjList("non_deleted","0",String.valueOf(limit));
         call.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
             @Override
@@ -553,24 +550,27 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
     @Override
     protected void onStop() {
         super.onStop();
-        String user = null;
-        try {
-            user = new GetUserRequest(SessionManager.getInstance().getUserId()).execute().get();
-            if(user.equals("401")){
-                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
-                SessionManager.getInstance().toLoginActivity();
-                finish();
-            } else {
-                String deleteOperator = UserSingleton.getInstance().getNome();
-                for (int i = 0; i < deletedItems.size(); i++) {
-                    new DeleteObjRequest().execute(deletedItems.get(i).getCodigo(), deletedItems.get(i).getFoto(), deleteOperator);
+        String deleteOperator = UserSingleton.getInstance().getNome();
+        for (int i = 0; i < deletedItems.size(); i++) {
+            Call<ResponseBody> call = new RetrofitConfig().deleteObjRequest().deleteObj(deletedItems.get(i).getCodigo(), deletedItems.get(i).getFoto(), deleteOperator);
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+
                 }
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                }
+            });
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        loadData();
     }
 
     @Override

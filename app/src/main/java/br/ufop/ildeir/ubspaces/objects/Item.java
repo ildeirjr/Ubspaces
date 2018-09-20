@@ -31,6 +31,8 @@ public class Item {
     private String descricao;
     private String unidade;
     private String foto;
+
+    @SerializedName("op_exclusao_id")
     private String nomeUsrExclusao;
 
     @SerializedName("tempo_exclusao")

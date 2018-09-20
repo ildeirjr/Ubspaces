@@ -68,6 +68,7 @@ public class LoginActivity extends AppCompatActivity {
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Carregando");
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setCancelable(false);
 
         progressBar = findViewById(R.id.progress_bar);
         linearLayout = findViewById(R.id.login_buttons_layout);

@@ -1,8 +1,11 @@
 package br.ufop.ildeir.ubspaces.activities;
 
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -51,6 +54,7 @@ public class VisualizarObjActivity extends AppCompatActivity {
     private ImageView foto;
     private Bitmap img;
 
+    private ProgressDialog progressDialog;
     private ProgressBar progressBar;
     private ScrollView scrollView;
 
@@ -102,6 +106,10 @@ public class VisualizarObjActivity extends AppCompatActivity {
         scrollView.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
         loadObject(code, imgPath);
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Carregando");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 
     }
 
@@ -217,23 +225,41 @@ public class VisualizarObjActivity extends AppCompatActivity {
                 finish();
                 return true;
             case R.id.btnDelete:
-                try {
-                    String itemCode = ItemSingleton.getInstance().getItemSingleton().getCodigo();
-                    String itemImgPath = ItemSingleton.getInstance().getItemSingleton().getFoto();
-                    String deleteUser = UserSingleton.getInstance().getNome();
-                    String result = new DeleteObjRequest().execute(itemCode,itemImgPath,deleteUser).get();
-                    if(result.equals("401")){
-                        Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_LONG).show();
-                        SessionManager.getInstance().toLoginActivity();
-                        finish();
+                progressDialog.show();
+                String itemCode = ItemSingleton.getInstance().getItemSingleton().getCodigo();
+                String itemImgPath = ItemSingleton.getInstance().getItemSingleton().getFoto();
+                String deleteUser = UserSingleton.getInstance().getNome();
+                Call<ResponseBody> call = new RetrofitConfig().deleteObjRequest().deleteObj(itemCode, itemImgPath, deleteUser);
+                call.enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        progressDialog.dismiss();
+                        Toast.makeText(VisualizarObjActivity.this, "Objeto excluído!", Toast.LENGTH_SHORT).show();
+                        onBackPressed();
                     }
-                    Log.e("delete",result);
-                    finish();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        t.printStackTrace();
+                    }
+                });
+//                try {
+//                    String itemCode = ItemSingleton.getInstance().getItemSingleton().getCodigo();
+//                    String itemImgPath = ItemSingleton.getInstance().getItemSingleton().getFoto();
+//                    String deleteUser = UserSingleton.getInstance().getNome();
+//                    String result = new DeleteObjRequest().execute(itemCode,itemImgPath,deleteUser).get();
+//                    if(result.equals("401")){
+//                        Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_LONG).show();
+//                        SessionManager.getInstance().toLoginActivity();
+//                        finish();
+//                    }
+//                    Log.e("delete",result);
+//                    finish();
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                } catch (ExecutionException e) {
+//                    e.printStackTrace();
+//                }
                 return true;
         }
         return super.onOptionsItemSelected(item);

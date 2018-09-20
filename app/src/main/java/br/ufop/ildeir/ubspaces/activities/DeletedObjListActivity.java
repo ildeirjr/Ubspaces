@@ -127,15 +127,12 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
         fabDate = findViewById(R.id.fabDateSearch);
 
         progressBar = findViewById(R.id.progress_bar);
-
-        progressBar.setVisibility(View.VISIBLE);
-
-        loadData();
     }
 
     public void loadData(){
         recyclerView.setVisibility(View.GONE);
         fabDate.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
         Call<ArrayList<RecyclerViewItem>> call = new RetrofitConfig().getObjListRequest().getObjList("deleted","0",String.valueOf(limit));
         call.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
             @Override
@@ -553,24 +550,26 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
     @Override
     protected void onStop() {
         super.onStop();
-        String user = null;
-        try {
-            user = new GetUserRequest(SessionManager.getInstance().getUserId()).execute().get();
-            if(user.equals("401")){
-                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
-                SessionManager.getInstance().toLoginActivity();
-                finish();
-            } else {
-                String deleteOperator = UserSingleton.getInstance().getNome();
-                for (int i = 0; i < deletedItems.size(); i++) {
-                    new RestoreObjRequest().execute(deletedItems.get(i).getCodigo(), deletedItems.get(i).getFoto(), deleteOperator);
+        for (int i = 0; i < deletedItems.size(); i++) {
+            Call<ResponseBody> call = new RetrofitConfig().restoreObjRequest().restoreObj(deletedItems.get(i).getCodigo());
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+
                 }
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                }
+            });
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        loadData();
     }
 
     @Override
@@ -669,16 +668,12 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
         if(recyclerListAdapter.getSelectedItemCount() > 0){
             enableActionMode(position);
         }else{
-            try {
-                Item item = new GetObjDataRequest(recyclerListAdapter.getItemList().get(position).getCodigo(),this).execute().get();
-                item.setImg(new GetObjImgRequest(recyclerListAdapter.getItemList().get(position).getFoto()).execute().get());
-                ItemSingleton.getInstance().setItemSingleton(item);
-                startActivity(new Intent(this,DeletedObjActivity.class));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
+            Intent it = new Intent(this, DeletedObjActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("codigo", recyclerListAdapter.getItemList().get(position).getCodigo());
+            bundle.putString("foto", recyclerListAdapter.getItemList().get(position).getFoto());
+            it.putExtras(bundle);
+            startActivity(it);
         }
     }
 

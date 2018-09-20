@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -44,10 +45,17 @@ import java.util.concurrent.ExecutionException;
 import br.ufop.ildeir.ubspaces.miscellaneous.DateDialog;
 import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.miscellaneous.DateHandler;
+import br.ufop.ildeir.ubspaces.network.RetrofitConfig;
 import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
 import br.ufop.ildeir.ubspaces.requests.post.PostObjDataRequest;
 import br.ufop.ildeir.ubspaces.requests.post.PostObjImgRequest;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class CadastrarObjActivity extends AppCompatActivity {
@@ -139,6 +147,8 @@ public class CadastrarObjActivity extends AppCompatActivity {
     boolean imgSeted = false;
 
     IntentIntegrator intentIntegrator;
+
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -244,6 +254,11 @@ public class CadastrarObjActivity extends AppCompatActivity {
             }
         });
 
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setMessage("Carregando");
+        progressDialog.setCancelable(false);
+
     }
 
     private void initDeptSpinner(String[] depts){
@@ -273,58 +288,114 @@ public class CadastrarObjActivity extends AppCompatActivity {
                    !validarCampo(etRecebedor)){
                     return true;
                 }else {
-                    String sqlDate = DateHandler.toSqlDate(calendar.getTime());
-                    try {
-                        JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("codigo",etCodigo.getEditText().getText().toString());
-                        jsonObject.put("nome",etNome.getEditText().getText().toString());
-                        jsonObject.put("estado",stateSpinner.getSelectedItem().toString());
-                        jsonObject.put("descricao",etDescricao.getEditText().getText().toString());
-                        jsonObject.put("local",etLocal.getEditText().getText().toString());
-                        jsonObject.put("depto",deptSpinner.getSelectedItem().toString());
-                        jsonObject.put("data_entrada",sqlDate);
-                        jsonObject.put("recebeu",etRecebedor.getEditText().getText().toString());
-                        jsonObject.put("nota",etNota.getEditText().getText().toString());
-                        jsonObject.put("unidade",unitSpinner.getSelectedItem().toString());
-                        jsonObject.put("nome_usuario",Integer.parseInt(SessionManager.getInstance().getUserId()));
-                        Log.e("user_id",SessionManager.getInstance().getUserId());
-                        Log.e("imgSeted",String.valueOf(imgSeted));
-                        if(imgSeted){
-                            JSONObject jsonImg = new JSONObject();
-                            jsonObject.put("foto",etNome.getEditText().getText().toString().replaceAll(" ","_")+"_"+etCodigo.getEditText().getText().toString()+".jpg");
-                            //Log.e("imagem_nome",jsonObject.getString("foto"));
-                            jsonImg.put("nome",jsonObject.getString("foto"));
-                            jsonImg.put("img",bmptoString());
-                            createImgThumb();
-                            jsonImg.put("imgThumb", Base64.encodeToString(bmpToByteArray(),Base64.DEFAULT));
-                            String result = new PostObjImgRequest(jsonImg.toString(),this).execute().get();
-                            if(result.equals("401")){
-                                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
-                                finish();
-                            }
-                            //Log.e("result",result);
-                        }else{
-                            jsonObject.put("foto","null.jpg");
-                        }
-                        //Log.e("teste","DEPOIS DO IF");
-                        String result = new PostObjDataRequest(jsonObject.toString()).execute().get();
-                        if(result.equals("401")){
-                            Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
-                            finish();
-                        }
-                        finish();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    }
-
+                    confirmAdd();
                 }
 
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void confirmAdd(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Confirma os dados?");
+        builder.setPositiveButton("SIM", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                progressDialog.show();
+                String sqlDate = DateHandler.toSqlDate(calendar.getTime());
+                try {
+                    final JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("codigo",etCodigo.getEditText().getText().toString());
+                    jsonObject.put("nome",etNome.getEditText().getText().toString());
+                    jsonObject.put("estado",stateSpinner.getSelectedItem().toString());
+                    jsonObject.put("descricao",etDescricao.getEditText().getText().toString());
+                    jsonObject.put("local",etLocal.getEditText().getText().toString());
+                    jsonObject.put("depto",deptSpinner.getSelectedItem().toString());
+                    jsonObject.put("data_entrada",sqlDate);
+                    jsonObject.put("recebeu",etRecebedor.getEditText().getText().toString());
+                    jsonObject.put("nota",etNota.getEditText().getText().toString());
+                    jsonObject.put("unidade",unitSpinner.getSelectedItem().toString());
+                    jsonObject.put("nome_usuario",Integer.parseInt(SessionManager.getInstance().getUserId()));
+                    Log.e("user_id",SessionManager.getInstance().getUserId());
+                    Log.e("imgSeted",String.valueOf(imgSeted));
+                    final JSONObject jsonImg = new JSONObject();
+                    if(imgSeted){
+                        jsonObject.put("foto",etNome.getEditText().getText().toString().replaceAll(" ","_")+"_"+etCodigo.getEditText().getText().toString()+".jpg");
+                    }else{
+                        jsonObject.put("foto","null.jpg");
+                    }
+                    RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+                    Call<ResponseBody> call = new RetrofitConfig().postObjDataRequest().postObjData(body);
+                    call.enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            try {
+                                if(response.body().string().equals("1")){
+                                    if(imgSeted){
+                                        jsonImg.put("nome",jsonObject.getString("foto"));
+                                        jsonImg.put("img",bmptoString());
+                                        createImgThumb();
+                                        jsonImg.put("imgThumb", Base64.encodeToString(bmpToByteArray(),Base64.DEFAULT));
+                                        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonImg.toString());
+                                        Call<ResponseBody> imgCall = new RetrofitConfig().postObjImgRequest().postObjImg(body);
+                                        imgCall.enqueue(new Callback<ResponseBody>() {
+                                            @Override
+                                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+
+                                            }
+
+                                            @Override
+                                            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                                t.printStackTrace();
+                                                Toast.makeText(CadastrarObjActivity.this, "Erro ao enviar a imagem.", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                    progressDialog.dismiss();
+                                    Toast.makeText(CadastrarObjActivity.this, "Objeto cadastrado com sucesso!", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                } else {
+                                    progressDialog.dismiss();
+                                    Toast.makeText(CadastrarObjActivity.this, "Erro ao cadastrar objeto. Tente novamente.", Toast.LENGTH_SHORT).show();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            t.printStackTrace();
+                            progressDialog.dismiss();
+                            Toast.makeText(CadastrarObjActivity.this, "Erro ao cadastrar o objeto. Tente novamente.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+
+
+                    //Log.e("teste","DEPOIS DO IF");
+//                    String result = new PostObjDataRequest(jsonObject.toString()).execute().get();
+//                    if(result.equals("401")){
+//                        Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
+//                        finish();
+//                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        builder.setNegativeButton("NÃO", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     @Override

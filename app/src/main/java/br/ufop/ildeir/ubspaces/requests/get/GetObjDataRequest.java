@@ -34,7 +34,7 @@ public class GetObjDataRequest extends AsyncTask<String,Void,Item> {
     protected Item doInBackground(String... strings) {
         try {
             JSONObject jsonItem;
-            URL url = new URL(new UbspaceURL().getUrl() + "?id=" + idObject);
+            URL url = new URL(new UbspaceURL().getUrl() + "getObject/?id=" + idObject);
             //Log.e("teste",new UbspaceURL().getUrl() + "?id=" + idObject);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
