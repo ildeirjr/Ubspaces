@@ -22,12 +22,12 @@ public class Item {
 
     @SerializedName("data_entrada")
     private String dataEntrada;
-    private String local;
+    private String bloco;
     private String nota;
 
     @SerializedName("quem_recebeu")
     private String recebeu;
-    private String depto;
+    private String sala;
     private String descricao;
     private String unidade;
     private String foto;
@@ -75,12 +75,12 @@ public class Item {
         this.dataEntrada = dataEntrada;
     }
 
-    public String getLocal() {
-        return local;
+    public String getBloco() {
+        return bloco;
     }
 
-    public void setLocal(String local) {
-        this.local = local;
+    public void setBloco(String bloco) {
+        this.bloco = bloco;
     }
 
     public String getNota() {
@@ -99,12 +99,12 @@ public class Item {
         this.recebeu = recebeu;
     }
 
-    public String getDepto() {
-        return depto;
+    public String getSala() {
+        return sala;
     }
 
-    public void setDepto(String depto) {
-        this.depto = depto;
+    public void setSala(String sala) {
+        this.sala = sala;
     }
 
     public String getDescricao() {
@@ -161,10 +161,10 @@ public class Item {
             setNome(jsonItem.getString("nome"));
             setEstado(jsonItem.getString("estado"));
             setDataEntrada(jsonItem.getString("data_entrada"));
-            setLocal(jsonItem.getString("local"));
+            setBloco(jsonItem.getString("bloco"));
             setNota(jsonItem.getString("nota"));
             setRecebeu(jsonItem.getString("quem_recebeu"));
-            setDepto(jsonItem.getString("depto"));
+            setSala(jsonItem.getString("sala"));
             setDescricao(jsonItem.getString("descricao"));
             setUnidade(jsonItem.getString("unidade"));
             setFoto(jsonItem.getString("foto"));
@@ -182,10 +182,10 @@ public class Item {
             jsonItem.put("nome",getNome());
             jsonItem.put("estado",getEstado());
             jsonItem.put("data_entrada",getDataEntrada());
-            jsonItem.put("local",getLocal());
+            jsonItem.put("bloco", getBloco());
             jsonItem.put("nota",getNota());
             jsonItem.put("recebeu",getRecebeu());
-            jsonItem.put("depto",getDepto());
+            jsonItem.put("sala", getSala());
             jsonItem.put("descricao",getDescricao());
             jsonItem.put("unidade",getUnidade());
             jsonItem.put("foto",getFoto());
@@ -216,10 +216,10 @@ public class Item {
         if (estado != null ? !estado.equals(item.estado) : item.estado != null) return false;
         if (dataEntrada != null ? !dataEntrada.equals(item.dataEntrada) : item.dataEntrada != null)
             return false;
-        if (local != null ? !local.equals(item.local) : item.local != null) return false;
+        if (bloco != null ? !bloco.equals(item.bloco) : item.bloco != null) return false;
         if (nota != null ? !nota.equals(item.nota) : item.nota != null) return false;
         if (recebeu != null ? !recebeu.equals(item.recebeu) : item.recebeu != null) return false;
-        if (depto != null ? !depto.equals(item.depto) : item.depto != null) return false;
+        if (sala != null ? !sala.equals(item.sala) : item.sala != null) return false;
         if (descricao != null ? !descricao.equals(item.descricao) : item.descricao != null)
             return false;
         if (unidade != null ? !unidade.equals(item.unidade) : item.unidade != null) return false;
@@ -237,10 +237,10 @@ public class Item {
         result = 31 * result + (nome != null ? nome.hashCode() : 0);
         result = 31 * result + (estado != null ? estado.hashCode() : 0);
         result = 31 * result + (dataEntrada != null ? dataEntrada.hashCode() : 0);
-        result = 31 * result + (local != null ? local.hashCode() : 0);
+        result = 31 * result + (bloco != null ? bloco.hashCode() : 0);
         result = 31 * result + (nota != null ? nota.hashCode() : 0);
         result = 31 * result + (recebeu != null ? recebeu.hashCode() : 0);
-        result = 31 * result + (depto != null ? depto.hashCode() : 0);
+        result = 31 * result + (sala != null ? sala.hashCode() : 0);
         result = 31 * result + (descricao != null ? descricao.hashCode() : 0);
         result = 31 * result + (unidade != null ? unidade.hashCode() : 0);
         result = 31 * result + (foto != null ? foto.hashCode() : 0);

@@ -143,7 +143,7 @@ public class LoginActivity extends AppCompatActivity {
 //                singleton.setNome(usr.getString("nome"));
 //                singleton.setEmail(usr.getString("email"));
 //                singleton.setDataNasc(usr.getString("data_nasc"));
-//                singleton.setDepto(usr.getString("depto"));
+//                singleton.setSala(usr.getString("depto"));
 //                System.out.println(singleton.getNome());
 //                Intent it = new Intent(this,HomeActivity.class);
 //                startActivity(it);

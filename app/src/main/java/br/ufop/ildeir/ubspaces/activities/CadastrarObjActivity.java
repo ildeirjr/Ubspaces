@@ -3,7 +3,6 @@ package br.ufop.ildeir.ubspaces.activities;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,7 +13,6 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
@@ -37,18 +35,11 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 
-import br.ufop.ildeir.ubspaces.miscellaneous.DateDialog;
 import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.miscellaneous.DateHandler;
 import br.ufop.ildeir.ubspaces.network.RetrofitConfig;
-import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
-import br.ufop.ildeir.ubspaces.requests.post.PostObjDataRequest;
-import br.ufop.ildeir.ubspaces.requests.post.PostObjImgRequest;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -64,15 +55,14 @@ public class CadastrarObjActivity extends AppCompatActivity {
     private TextInputLayout etCodigo;
     private TextInputLayout etNome;
     private TextInputLayout etDescricao;
-    private TextInputLayout etLocal;
-    private TextInputLayout etDepto;
+    private TextInputLayout etBloco;
+    private TextInputLayout etSala;
     private TextInputLayout etData;
     private TextInputLayout etRecebedor;
     private TextInputLayout etNota;
     private ImageView fotoView;
     private ArrayAdapter<String> spinnerAdapter;
-    private Spinner stateSpinner, unitSpinner, deptSpinner;
-    private int dia,mes,ano;
+    private Spinner stateSpinner, unitSpinner;
     private Calendar calendar;
     private static int IMG_GALLERY = 1;
     private static int IMG_CAMERA = 2;
@@ -89,58 +79,6 @@ public class CadastrarObjActivity extends AppCompatActivity {
                                                     "Instituto de Ciências Humanas e Sociais (ICHS)",
                                                     "Instituto de Ciências Sociais Aplicadas (ICSA)",
                                                     "Instituto de Filosofia, Arte e Cultura (IFAC)"};
-
-    private static String[] DEPT_ICEA_OPTIONS = {"DECEA - Departamento de Ciências Exatas e Aplicadas",
-                                                 "DECSI - Departamento de Computação e Sistemas",
-                                                 "DEELT - Departamento de Engenharia Elétrica",
-                                                 "DEENP - Departamento de Engenharia de Produção"};
-
-    private static String[] DEPT_ICSA_OPTIONS = {"DECEG - Departamento de Ciências Econômicas e Gerenciais",
-                                                 "DECSO - Departamento de Ciências Sociais, Jornalismo e Serviço Social"};
-
-    private static String[] DEPT_ICHS_OPTIONS = {"DEEDU - Departamento de Educação",
-                                                 "DEHIS - Departamento de História",
-                                                 "DELET - Departamento de Letras"};
-
-    private static String[] DEPT_IFAC_OPTIONS = {"DEART - Departamento de Artes",
-                                                 "DEFIL - Departamento de Filosofia",
-                                                 "DEMUS - Departamento de Música"};
-
-    private static String[] DEPT_ICEB_OPTIONS = {"DEBIO - Departamento de Biodiversidade, Evolução e Meio Ambiente",
-                                                 "DECBI - Departamento de Ciências Biológicas",
-                                                 "DECOM - Departamento de Computação",
-                                                 "DEEMA - Departamento de Educação Matemática",
-                                                 "DEEST - Departamento de Estatística",
-                                                 "DEFIS - Departamento de Física",
-                                                 "DEMAT - Departamento de Matemática",
-                                                 "DEQUI - Departamento de Química"};
-
-    private static String[] DEPT_NUTRICAO_OPTIONS = {" "};
-
-    private static String[] DEPT_MEDICINA_OPTIONS = {"DECGP - Departamento de Cirurgia, Ginecologia e Obstetrícia e Propedêutica",
-                                                     "DECPA - Departamento de Clínica Pediátrica e do Adulto",
-                                                     "DEMSC - Departamento de Medicina de Família, Saúde Mental e Saúde Coletiva"};
-
-    private static String[] DEPT_MINAS_OPTIONS = {"DEAMB - Departamento de Engenharia Ambiental",
-                                                  "DEARQ - Departamento de Arquitetura e Urbanismo",
-                                                  "DECAT - Departamento do Curso de Engenharia de Controle e Automação e Técnicas Fundamentais",
-                                                  "DEMEC - Departamento do Curso de Engenharia Mecânica",
-                                                  "DECIV - Departamento de Engenharia Civil",
-                                                  "DEGEO - Departamento de Geologia",
-                                                  "DEMET - Departamento de Engenharia Metalúrgica e de Materiais",
-                                                  "DEMIN - Departamento de Engenharia de Minas",
-                                                  "DEPRO - Departamento de Engenharia de Produção",
-                                                  "DEURB - Departamento de Engenharia Urbana"};
-
-    private static String[] DEPT_FARMACIA_OPTIONS = {"Departamento de Análises Clínicas",
-                                                     "Departamento de Farmácia"};
-
-    private static String[] DEPT_EDTM_OPTIONS = {" "};
-
-    private static String[] DEPT_CEDUFOP_OPTIONS = {" "};
-
-    private static String[] DEPT_CEAD_OPTIONS = {"DEETE - Departamento de Educação e Tecnologias",
-                                                 "DEGEP - Departamento de Gestão Pública"};
 
     Bitmap img;
     byte[] b;
@@ -183,15 +121,14 @@ public class CadastrarObjActivity extends AppCompatActivity {
         etCodigo = findViewById(R.id.layoutCod);
         etNome = findViewById(R.id.layoutNome);
         etDescricao = findViewById(R.id.layoutDescricao);
-        etLocal = findViewById(R.id.layoutLocal);
-        //etDepto = findViewById(R.id.layoutDepto);
+        etBloco = findViewById(R.id.layoutBloco);
+        etSala = findViewById(R.id.layoutSala);
         etData = findViewById(R.id.layoutData);
         etRecebedor = findViewById(R.id.layoutRecebedor);
         etNota = findViewById(R.id.layoutNota);
         fotoView = findViewById(R.id.addImg);
         stateSpinner = findViewById(R.id.stateSpinner);
         unitSpinner = findViewById(R.id.unitSpinner);
-        deptSpinner = findViewById(R.id.deptSpinner);
 
         intentIntegrator = new IntentIntegrator(this);
 
@@ -218,52 +155,12 @@ public class CadastrarObjActivity extends AppCompatActivity {
 
         spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,UNIT_SPINNER_OPTIONS);
         unitSpinner.setAdapter(spinnerAdapter);
-        unitSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[0])){
-                    initDeptSpinner(DEPT_CEAD_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[1])){
-                    initDeptSpinner(DEPT_CEDUFOP_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[2])){
-                    initDeptSpinner(DEPT_EDTM_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[3])){
-                    initDeptSpinner(DEPT_FARMACIA_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[4])){
-                    initDeptSpinner(DEPT_MINAS_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[5])){
-                    initDeptSpinner(DEPT_MEDICINA_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[6])){
-                    initDeptSpinner(DEPT_NUTRICAO_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[7])){
-                    initDeptSpinner(DEPT_ICEA_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[8])){
-                    initDeptSpinner(DEPT_ICEB_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[9])){
-                    initDeptSpinner(DEPT_ICHS_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[10])){
-                    initDeptSpinner(DEPT_ICSA_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[11])){
-                    initDeptSpinner(DEPT_IFAC_OPTIONS);
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.setMessage("Carregando");
         progressDialog.setCancelable(false);
 
-    }
-
-    private void initDeptSpinner(String[] depts){
-        ArrayAdapter<String> adapterDeptSpinner = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,depts);
-        deptSpinner.setAdapter(adapterDeptSpinner);
     }
 
     @Override
@@ -282,7 +179,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
             case R.id.btnConfirm:
                 if(!validarCampo(etCodigo)|
                    !validarCampo(etNome)|
-                   !validarCampo(etLocal)|
+                   !validarCampo(etSala)|
                    !validarCampo(etData)|
                    !validarCampo(etNota)|
                    !validarCampo(etRecebedor)){
@@ -309,8 +206,8 @@ public class CadastrarObjActivity extends AppCompatActivity {
                     jsonObject.put("nome",etNome.getEditText().getText().toString());
                     jsonObject.put("estado",stateSpinner.getSelectedItem().toString());
                     jsonObject.put("descricao",etDescricao.getEditText().getText().toString());
-                    jsonObject.put("local",etLocal.getEditText().getText().toString());
-                    jsonObject.put("depto",deptSpinner.getSelectedItem().toString());
+                    jsonObject.put("bloco", etBloco.getEditText().getText().toString());
+                    jsonObject.put("sala",etSala.getEditText().getText().toString());
                     jsonObject.put("data_entrada",sqlDate);
                     jsonObject.put("recebeu",etRecebedor.getEditText().getText().toString());
                     jsonObject.put("nota",etNota.getEditText().getText().toString());

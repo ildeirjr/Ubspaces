@@ -2,7 +2,6 @@ package br.ufop.ildeir.ubspaces.activities;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,19 +32,12 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 
-import br.ufop.ildeir.ubspaces.miscellaneous.DateDialog;
 import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.miscellaneous.DateHandler;
 import br.ufop.ildeir.ubspaces.network.RetrofitConfig;
 import br.ufop.ildeir.ubspaces.objects.Item;
-import br.ufop.ildeir.ubspaces.requests.post.EditObjDataRequest;
-import br.ufop.ildeir.ubspaces.requests.post.PostObjImgRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -61,14 +53,13 @@ public class EditarObjActivity extends AppCompatActivity {
     private TextInputLayout etCodigo;
     private TextInputLayout etNome;
     private TextInputLayout etDescricao;
-    private TextInputLayout etLocal;
-    private TextInputLayout etDepto;
+    private TextInputLayout etBloco;
+    private TextInputLayout etSala;
     private TextInputLayout etData;
     private TextInputLayout etRecebedor;
     private TextInputLayout etNota;
     private ImageView fotoView;
     private Spinner stateSpinner, unitSpinner, deptSpinner;
-    private int dia,mes,ano;
     private Calendar calendar;
     private static int IMG_REQUEST = 1;
     private static String[] STATE_SPINNER_OPTIONS = {"Normal","Quebrado","Consertado"};
@@ -84,58 +75,6 @@ public class EditarObjActivity extends AppCompatActivity {
             "Instituto de Ciências Humanas e Sociais (ICHS)",
             "Instituto de Ciências Sociais Aplicadas (ICSA)",
             "Instituto de Filosofia, Arte e Cultura (IFAC)"};
-
-    private static String[] DEPT_ICEA_OPTIONS = {"DECEA - Departamento de Ciências Exatas e Aplicadas",
-            "DECSI - Departamento de Computação e Sistemas",
-            "DEELT - Departamento de Engenharia Elétrica",
-            "DEENP - Departamento de Engenharia de Produção"};
-
-    private static String[] DEPT_ICSA_OPTIONS = {"DECEG - Departamento de Ciências Econômicas e Gerenciais",
-            "DECSO - Departamento de Ciências Sociais, Jornalismo e Serviço Social"};
-
-    private static String[] DEPT_ICHS_OPTIONS = {"DEEDU - Departamento de Educação",
-            "DEHIS - Departamento de História",
-            "DELET - Departamento de Letras"};
-
-    private static String[] DEPT_IFAC_OPTIONS = {"DEART - Departamento de Artes",
-            "DEFIL - Departamento de Filosofia",
-            "DEMUS - Departamento de Música"};
-
-    private static String[] DEPT_ICEB_OPTIONS = {"DEBIO - Departamento de Biodiversidade, Evolução e Meio Ambiente",
-            "DECBI - Departamento de Ciências Biológicas",
-            "DECOM - Departamento de Computação",
-            "DEEMA - Departamento de Educação Matemática",
-            "DEEST - Departamento de Estatística",
-            "DEFIS - Departamento de Física",
-            "DEMAT - Departamento de Matemática",
-            "DEQUI - Departamento de Química"};
-
-    private static String[] DEPT_NUTRICAO_OPTIONS = {" "};
-
-    private static String[] DEPT_MEDICINA_OPTIONS = {"DECGP - Departamento de Cirurgia, Ginecologia e Obstetrícia e Propedêutica",
-            "DECPA - Departamento de Clínica Pediátrica e do Adulto",
-            "DEMSC - Departamento de Medicina de Família, Saúde Mental e Saúde Coletiva"};
-
-    private static String[] DEPT_MINAS_OPTIONS = {"DEAMB - Departamento de Engenharia Ambiental",
-            "DEARQ - Departamento de Arquitetura e Urbanismo",
-            "DECAT - Departamento do Curso de Engenharia de Controle e Automação e Técnicas Fundamentais",
-            "DEMEC - Departamento do Curso de Engenharia Mecânica",
-            "DECIV - Departamento de Engenharia Civil",
-            "DEGEO - Departamento de Geologia",
-            "DEMET - Departamento de Engenharia Metalúrgica e de Materiais",
-            "DEMIN - Departamento de Engenharia de Minas",
-            "DEPRO - Departamento de Engenharia de Produção",
-            "DEURB - Departamento de Engenharia Urbana"};
-
-    private static String[] DEPT_FARMACIA_OPTIONS = {"Departamento de Análises Clínicas",
-            "Departamento de Farmácia"};
-
-    private static String[] DEPT_EDTM_OPTIONS = {" "};
-
-    private static String[] DEPT_CEDUFOP_OPTIONS = {" "};
-
-    private static String[] DEPT_CEAD_OPTIONS = {"DEETE - Departamento de Educação e Tecnologias",
-            "DEGEP - Departamento de Gestão Pública"};
 
     Bitmap img;
     byte[] b;
@@ -161,56 +100,20 @@ public class EditarObjActivity extends AppCompatActivity {
         etCodigo = findViewById(R.id.layoutCod);
         etNome = findViewById(R.id.layoutNome);
         etDescricao = findViewById(R.id.layoutDescricao);
-        etLocal = findViewById(R.id.layoutLocal);
-        //etDepto = findViewById(R.id.layoutDepto);
+        etBloco = findViewById(R.id.layoutBloco);
+        etSala = findViewById(R.id.layoutSala);
         etData = findViewById(R.id.layoutData);
         etRecebedor = findViewById(R.id.layoutRecebedor);
         etNota = findViewById(R.id.layoutNota);
         fotoView = findViewById(R.id.addImg);
         stateSpinner = findViewById(R.id.stateSpinner);
         unitSpinner = findViewById(R.id.unitSpinner);
-        deptSpinner = findViewById(R.id.deptSpinnerEdit);
 
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, STATE_SPINNER_OPTIONS);
         stateSpinner.setAdapter(spinnerAdapter);
 
         spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, UNIT_SPINNER_OPTIONS);
         unitSpinner.setAdapter(spinnerAdapter);
-        unitSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[0])){
-                    initDeptSpinner(itemSingleton.getDepto(), DEPT_CEAD_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[1])){
-                    initDeptSpinner(itemSingleton.getDepto(), DEPT_CEDUFOP_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[2])){
-                    initDeptSpinner(itemSingleton.getDepto(), DEPT_EDTM_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[3])){
-                    initDeptSpinner(itemSingleton.getDepto(), DEPT_FARMACIA_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[4])){
-                    initDeptSpinner(itemSingleton.getDepto(), DEPT_MINAS_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[5])){
-                    initDeptSpinner(itemSingleton.getDepto(), DEPT_MEDICINA_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[6])){
-                    initDeptSpinner(itemSingleton.getDepto(), DEPT_NUTRICAO_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[7])){
-                    initDeptSpinner(itemSingleton.getDepto(), DEPT_ICEA_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[8])){
-                    initDeptSpinner(itemSingleton.getDepto(), DEPT_ICEB_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[9])){
-                    initDeptSpinner(itemSingleton.getDepto(), DEPT_ICHS_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[10])){
-                    initDeptSpinner(itemSingleton.getDepto(), DEPT_ICSA_OPTIONS);
-                } else if(UNIT_SPINNER_OPTIONS[i].equals(UNIT_SPINNER_OPTIONS[11])){
-                    initDeptSpinner(itemSingleton.getDepto(), DEPT_IFAC_OPTIONS);
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
 
         etData.getEditText().setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -239,8 +142,8 @@ public class EditarObjActivity extends AppCompatActivity {
 //            etCodigo.getEditText().setText(bundle.getString("cod"));
 //            etNome.getEditText().setText(bundle.getString("nome"));
 //            etDescricao.getEditText().setText(bundle.getString("descricao"));
-//            etLocal.getEditText().setText(bundle.getString("local"));
-//            etDepto.getEditText().setText(bundle.getString("depto"));
+//            etBloco.getEditText().setText(bundle.getString("local"));
+//            etSala.getEditText().setText(bundle.getString("depto"));
 //            etData.getEditText().setText(bundle.getString("data"));
 //            etRecebedor.getEditText().setText(bundle.getString("recebedor"));
 //            etNota.getEditText().setText(bundle.getString("nota"));
@@ -258,8 +161,8 @@ public class EditarObjActivity extends AppCompatActivity {
             etCodigo.getEditText().setText(itemSingleton.getCodigo());
             etNome.getEditText().setText(itemSingleton.getNome());
             etDescricao.getEditText().setText(itemSingleton.getDescricao());
-            etLocal.getEditText().setText(itemSingleton.getLocal());
-            //etDepto.getEditText().setText(itemSingleton.getDepto());
+            etBloco.getEditText().setText(itemSingleton.getBloco());
+            etSala.getEditText().setText(itemSingleton.getSala());
             etData.getEditText().setText(DateHandler.toStringDate(calendar.getTime()));
             etRecebedor.getEditText().setText(itemSingleton.getRecebeu());
             etNota.getEditText().setText(itemSingleton.getNota());
@@ -320,22 +223,6 @@ public class EditarObjActivity extends AppCompatActivity {
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
     }
 
-    private void initDeptSpinner(String dept, String[] depts){
-        ArrayAdapter<String> adapterSpinner = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, depts);
-        deptSpinner.setAdapter(adapterSpinner);
-        for(int i=0 ; i<depts.length ; i++){
-            if(dept.equals(depts[i])){
-                deptSpinner.setSelection(i);
-                break;
-            }
-        }
-    }
-
-    private void onSelectDeptSpinner(String[] depts){
-        ArrayAdapter<String> adapterSpinner = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, depts);
-        deptSpinner.setAdapter(adapterSpinner);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_cadastrar_obj,menu);
@@ -352,7 +239,7 @@ public class EditarObjActivity extends AppCompatActivity {
             case R.id.btnConfirm:
                 if(!validarCampo(etCodigo)|
                         !validarCampo(etNome)|
-                        !validarCampo(etLocal)|
+                        !validarCampo(etSala)|
                         !validarCampo(etData)|
                         !validarCampo(etNota)|
                         !validarCampo(etRecebedor)){
@@ -386,8 +273,8 @@ public class EditarObjActivity extends AppCompatActivity {
                 itemSingleton.setNome(etNome.getEditText().getText().toString());
                 itemSingleton.setEstado(stateSpinner.getSelectedItem().toString());
                 itemSingleton.setDescricao(etDescricao.getEditText().getText().toString());
-                itemSingleton.setLocal(etLocal.getEditText().getText().toString());
-                itemSingleton.setDepto(deptSpinner.getSelectedItem().toString());
+                itemSingleton.setBloco(etBloco.getEditText().getText().toString());
+                itemSingleton.setSala(etSala.getEditText().getText().toString());
                 itemSingleton.setDataEntrada(sqlDate);
                 itemSingleton.setRecebeu(etRecebedor.getEditText().getText().toString());
                 itemSingleton.setNota(etNota.getEditText().getText().toString());
@@ -470,8 +357,8 @@ public class EditarObjActivity extends AppCompatActivity {
 //                    bundle.putString("cod", etCodigo.getEditText().getText().toString());
 //                    bundle.putString("nome", etNome.getEditText().getText().toString());
 //                    bundle.putString("descricao", etDescricao.getEditText().getText().toString());
-//                    bundle.putString("local", etLocal.getEditText().getText().toString());
-//                    bundle.putString("depto", etDepto.getEditText().getText().toString());
+//                    bundle.putString("local", etBloco.getEditText().getText().toString());
+//                    bundle.putString("depto", etSala.getEditText().getText().toString());
 //                    bundle.putString("dia", String.valueOf(dia));
 //                    bundle.putString("mes", String.valueOf(mes));
 //                    bundle.putString("ano", String.valueOf(ano));

@@ -8,8 +8,6 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import java.io.ByteArrayOutputStream;
 
 import br.ufop.ildeir.ubspaces.R;
@@ -26,9 +24,9 @@ public class VisualizeObjActivity extends AppCompatActivity {
     private TextView textCodigo;
     private TextView textEstado;
     private TextView textDescricao;
-    private TextView textDepto;
+    private TextView textSala;
     private TextView textData;
-    private TextView textLocal;
+    private TextView textBloco;
     private TextView textRecebedor;
     private TextView textNota;
     private TextView textUnidade;
@@ -49,8 +47,8 @@ public class VisualizeObjActivity extends AppCompatActivity {
         textCodigo = findViewById(R.id.textCodigo);
         textEstado = findViewById(R.id.textEstado);
         textDescricao = findViewById(R.id.textDescricao);
-        textLocal = findViewById(R.id.textLocal);
-        textDepto = findViewById(R.id.textDepto);
+        textBloco = findViewById(R.id.textBloco);
+        textSala = findViewById(R.id.textSala);
         textData = findViewById(R.id.textData);
         textRecebedor = findViewById(R.id.textRecebedor);
         textNota = findViewById(R.id.textNota);
@@ -62,8 +60,8 @@ public class VisualizeObjActivity extends AppCompatActivity {
             textCodigo.setText(ItemSingleton.getInstance().getItemSingleton().getCodigo());
             textEstado.setText(ItemSingleton.getInstance().getItemSingleton().getEstado());
             textDescricao.setText(ItemSingleton.getInstance().getItemSingleton().getDescricao());
-            textLocal.setText(ItemSingleton.getInstance().getItemSingleton().getLocal());
-            textDepto.setText(ItemSingleton.getInstance().getItemSingleton().getDepto());
+            textBloco.setText(ItemSingleton.getInstance().getItemSingleton().getBloco());
+            textSala.setText(ItemSingleton.getInstance().getItemSingleton().getSala());
             textData.setText(DateHandler.sqlDateToString(ItemSingleton.getInstance().getItemSingleton().getDataEntrada()));
             textRecebedor.setText(ItemSingleton.getInstance().getItemSingleton().getRecebeu());
             textNota.setText(ItemSingleton.getInstance().getItemSingleton().getNota());

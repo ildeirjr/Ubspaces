@@ -103,20 +103,20 @@
 
                 <!--</android.support.design.widget.TextInputLayout>-->
 
-                <android.support.design.widget.TextInputLayout
-                    android:id="@+id/layoutLocal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:errorEnabled="true">
+                <!--<android.support.design.widget.TextInputLayout-->
+                    <!--android:id="@+id/layoutLocal"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--app:errorEnabled="true">-->
 
-                    <android.support.design.widget.TextInputEditText
-                        android:id="@+id/editLocal"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="text"
-                        android:hint="Local"/>
+                    <!--<android.support.design.widget.TextInputEditText-->
+                        <!--android:id="@+id/editLocal"-->
+                        <!--android:layout_width="match_parent"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:inputType="text"-->
+                        <!--android:hint="Local"/>-->
 
-                </android.support.design.widget.TextInputLayout>
+                <!--</android.support.design.widget.TextInputLayout>-->
 
                 <!--<android.support.design.widget.TextInputLayout-->
                     <!--android:id="@+id/layoutDepto"-->
@@ -201,28 +201,58 @@
 
                 </LinearLayout>
 
-                <LinearLayout
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/layoutBloco"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingBottom="8dp">
+                    app:errorEnabled="true">
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="Departamento: "
-                        android:layout_weight="3"
-                        android:textSize="18dp"
-                        android:paddingLeft="4dp"
-                        android:gravity="center_vertical"/>
-
-                    <Spinner
-                        android:id="@+id/deptSpinner"
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/editBloco"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="2"></Spinner>
+                        android:inputType="text"
+                        android:hint="Bloco/Prédio"/>
 
-                </LinearLayout>
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/layoutSala"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:errorEnabled="true">
+
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/editSala"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:hint="Sala"/>
+
+                </android.support.design.widget.TextInputLayout>
+
+                <!--<LinearLayout-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:orientation="horizontal"-->
+                    <!--android:paddingBottom="8dp">-->
+
+                    <!--<TextView-->
+                        <!--android:layout_width="match_parent"-->
+                        <!--android:layout_height="match_parent"-->
+                        <!--android:text="Departamento: "-->
+                        <!--android:layout_weight="3"-->
+                        <!--android:textSize="18dp"-->
+                        <!--android:paddingLeft="4dp"-->
+                        <!--android:gravity="center_vertical"/>-->
+
+                    <!--<Spinner-->
+                        <!--android:id="@+id/deptSpinner"-->
+                        <!--android:layout_width="match_parent"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:layout_weight="2"></Spinner>-->
+
+                <!--</LinearLayout>-->
 
                 <LinearLayout
                     android:layout_width="match_parent"

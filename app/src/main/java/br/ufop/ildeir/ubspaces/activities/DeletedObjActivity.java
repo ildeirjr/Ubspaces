@@ -33,9 +33,9 @@ public class DeletedObjActivity extends AppCompatActivity {
     private TextView textCodigo;
     private TextView textEstado;
     private TextView textDescricao;
-    private TextView textDepto;
+    private TextView textSala;
     private TextView textData;
-    private TextView textLocal;
+    private TextView textBloco;
     private TextView textRecebedor;
     private TextView textNota;
     private TextView textUnidade;
@@ -64,8 +64,8 @@ public class DeletedObjActivity extends AppCompatActivity {
         textCodigo = findViewById(R.id.textCodigo);
         textEstado = findViewById(R.id.textEstado);
         textDescricao = findViewById(R.id.textDescricao);
-        textLocal = findViewById(R.id.textLocal);
-        textDepto = findViewById(R.id.textDepto);
+        textBloco = findViewById(R.id.textBloco);
+        textSala = findViewById(R.id.textSala);
         textData = findViewById(R.id.textData);
         textRecebedor = findViewById(R.id.textRecebedor);
         textNota = findViewById(R.id.textNota);
@@ -109,8 +109,8 @@ public class DeletedObjActivity extends AppCompatActivity {
                                 textCodigo.setText(itemSingleton.getCodigo());
                                 textEstado.setText(itemSingleton.getEstado());
                                 textDescricao.setText(itemSingleton.getDescricao());
-                                textLocal.setText(itemSingleton.getLocal());
-                                textDepto.setText(itemSingleton.getDepto());
+                                textBloco.setText(itemSingleton.getBloco());
+                                textSala.setText(itemSingleton.getSala());
                                 textData.setText(itemSingleton.getDataEntrada());
                                 textRecebedor.setText(itemSingleton.getRecebeu());
                                 textNota.setText(itemSingleton.getNota());
@@ -151,8 +151,8 @@ public class DeletedObjActivity extends AppCompatActivity {
                                         textCodigo.setText(itemSingleton.getCodigo());
                                         textEstado.setText(itemSingleton.getEstado());
                                         textDescricao.setText(itemSingleton.getDescricao());
-                                        textLocal.setText(itemSingleton.getLocal());
-                                        textDepto.setText(itemSingleton.getDepto());
+                                        textBloco.setText(itemSingleton.getBloco());
+                                        textSala.setText(itemSingleton.getSala());
                                         textData.setText(itemSingleton.getDataEntrada());
                                         textRecebedor.setText(itemSingleton.getRecebeu());
                                         textNota.setText(itemSingleton.getNota());

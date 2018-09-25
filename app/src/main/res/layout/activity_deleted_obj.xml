@@ -136,11 +136,11 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Local"
+                    android:text="Bloco/Prédio"
                     android:textColor="@color/primaryText"/>
 
                 <TextView
-                    android:id="@+id/textLocal"
+                    android:id="@+id/textBloco"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Laboratório de uso geral"
@@ -150,11 +150,11 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Departamento"
+                    android:text="Sala"
                     android:textColor="@color/primaryText"/>
 
                 <TextView
-                    android:id="@+id/textDepto"
+                    android:id="@+id/textSala"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="DECSI"
