@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.io.IOException;
 
+import br.ufop.ildeir.ubspaces.network.requests.get.GetFilteredObjRequest;
 import br.ufop.ildeir.ubspaces.network.requests.post.ClearUserTokenRequest;
 import br.ufop.ildeir.ubspaces.network.requests.delete.DeleteObjRequest;
 import br.ufop.ildeir.ubspaces.network.requests.get.GetMetadataRequest;
@@ -83,6 +84,10 @@ public class RetrofitConfig {
     }
 
     /** GET REQUESTS **/
+
+    public GetFilteredObjRequest getFilteredObjRequest(){
+        return this.retrofit.create(GetFilteredObjRequest.class);
+    }
 
     public GetMetadataRequest getMetadataRequest(){
         return this.retrofit.create(GetMetadataRequest.class);

@@ -326,7 +326,10 @@ public class EditarObjActivity extends AppCompatActivity {
                                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                                         progressDialog.dismiss();
                                         Toast.makeText(EditarObjActivity.this, "Alterações realizadas com sucesso!", Toast.LENGTH_SHORT).show();
-                                        startActivity(it);
+                                        Intent intent = new Intent();
+                                        intent.putExtra("edited",true);
+                                        intent.putExtra("codigo", codigoAntigo);
+                                        setResult(RESULT_OK, intent);
                                         finish();
                                     }
 
@@ -337,8 +340,10 @@ public class EditarObjActivity extends AppCompatActivity {
                                 });
                             } else {
                                 progressDialog.dismiss();
-                                Toast.makeText(EditarObjActivity.this, "Alterações realizadas com sucesso!", Toast.LENGTH_SHORT).show();
-                                startActivity(it);
+                                Intent intent = new Intent();
+                                intent.putExtra("edited",true);
+                                intent.putExtra("codigo", codigoAntigo);
+                                setResult(RESULT_OK, intent);
                                 finish();
                             }
                         }

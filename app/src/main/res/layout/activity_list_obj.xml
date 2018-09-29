@@ -32,9 +32,9 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_gravity="bottom|end"
-        android:src="@drawable/ic_calendar"
+        android:src="@drawable/ic_filter"
         android:tint="@color/white"
         app:fabSize="normal"
-        android:onClick="filterDate"/>
+        android:onClick="filter"/>
 
 </android.support.design.widget.CoordinatorLayout>

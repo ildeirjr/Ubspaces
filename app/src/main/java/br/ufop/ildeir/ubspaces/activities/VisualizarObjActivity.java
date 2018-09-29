@@ -52,6 +52,10 @@ public class VisualizarObjActivity extends AppCompatActivity {
     private SimpleDateFormat simpleDateFormat;
     private SimpleDateFormat sqlDateFormat;
 
+    private int position;
+
+    private static int EDIT_OBJ_CODE = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,9 +97,9 @@ public class VisualizarObjActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String code = intent.getExtras().getString("codigo");
         String imgPath = intent.getExtras().getString("foto");
+        position = intent.getExtras().getInt("index");
 
-        scrollView.setVisibility(View.GONE);
-        progressBar.setVisibility(View.VISIBLE);
+
         loadObject(code, imgPath);
 
         progressDialog = new ProgressDialog(this);
@@ -105,6 +109,8 @@ public class VisualizarObjActivity extends AppCompatActivity {
     }
 
     public void loadObject(String code, final String imgPath){
+        scrollView.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
         Call<Item> call = new RetrofitConfig().getObjDataRequest().getObjData(code);
         System.out.println(call.request().url().toString());
         call.enqueue(new Callback<Item>() {
@@ -211,22 +217,27 @@ public class VisualizarObjActivity extends AppCompatActivity {
                 return true;
             case R.id.btnEdit:
                 Intent it = new Intent(this, EditarObjActivity.class);
-                it.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(it);
-                finish();
+                startActivityForResult(it, EDIT_OBJ_CODE);
                 return true;
             case R.id.btnDelete:
                 progressDialog.show();
                 String itemCode = ItemSingleton.getInstance().getItemSingleton().getCodigo();
                 String itemImgPath = ItemSingleton.getInstance().getItemSingleton().getFoto();
                 String deleteUser = UserSingleton.getInstance().getNome();
+
+                final Intent intent = new Intent();
+                intent.putExtra("deleted",true);
+                intent.putExtra("index", position);
+                intent.putExtra("codigo", ItemSingleton.getInstance().getItemSingleton().getCodigo());
+
                 Call<ResponseBody> call = new RetrofitConfig().deleteObjRequest().deleteObj(itemCode, itemImgPath, deleteUser);
                 call.enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         progressDialog.dismiss();
                         Toast.makeText(VisualizarObjActivity.this, "Objeto excluído!", Toast.LENGTH_SHORT).show();
-                        onBackPressed();
+                        setResult(RESULT_OK, intent);
+                        finish();
                     }
 
                     @Override
@@ -254,6 +265,21 @@ public class VisualizarObjActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == EDIT_OBJ_CODE && resultCode == RESULT_OK){
+            String code = ItemSingleton.getInstance().getItemSingleton().getCodigo();
+            String imgPath = ItemSingleton.getInstance().getItemSingleton().getFoto();
+            loadObject(code, imgPath);
+            Intent intent = new Intent();
+            intent.putExtra("edited", data.getBooleanExtra("edited", true));
+            intent.putExtra("index", position);
+            intent.putExtra("codigo", data.getStringExtra("codigo"));
+            setResult(RESULT_OK, intent);
+        }
     }
 
     public byte[] bmpToByteArray(){

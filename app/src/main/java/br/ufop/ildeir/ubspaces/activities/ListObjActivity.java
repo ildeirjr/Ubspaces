@@ -1,15 +1,18 @@
 package br.ufop.ildeir.ubspaces.activities;
 
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.SearchViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,16 +22,26 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -83,6 +96,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
     private boolean isNameFilterActivated = false;
 
     private ProgressBar progressBar;
+    private ProgressDialog progressDialog;
 
     // variable to define how many items you want to load in RecyclerView at a time
     private final static int limit = 10;
@@ -92,6 +106,35 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
     private Call<ArrayList<RecyclerViewItem>> call;
     private Call<ArrayList<RecyclerViewItem>> searchNameCall;
     private Call<ArrayList<RecyclerViewItem>> searchDateCall;
+
+    private CheckBox nameCheckbox;
+    private CheckBox localCheckbox;
+    private CheckBox dateCheckbox;
+    private CheckBox stateCheckbox;
+    private EditText etFilterName;
+    private EditText etFilterBloco;
+    private EditText etFilterSala;
+    private EditText etFilterStartDate;
+    private EditText etFilterEndDate;
+    private Spinner unityFilterSpinner;
+    private Spinner stateFilterSpinner;
+
+    private static String[] STATE_SPINNER_OPTIONS = {"Normal","Quebrado","Consertado"};
+    private static String[] UNIT_SPINNER_OPTIONS = {"Centro de Educação Aberta e a Distância (CEAD)",
+            "Centro Desportivo da UFOP (CEDUFOP)",
+            "Escola de Direito, Turismo e Museologia (EDTM)",
+            "Escola de Farmácia",
+            "Escola de Minas",
+            "Escola de Medicina",
+            "Escola de Nutrição",
+            "Instituto de Ciências Exatas e Aplicadas (ICEA)",
+            "Instituto de Ciências Exatas e Biológicas",
+            "Instituto de Ciências Humanas e Sociais (ICHS)",
+            "Instituto de Ciências Sociais Aplicadas (ICSA)",
+            "Instituto de Filosofia, Arte e Cultura (IFAC)"};
+
+    private static int DELETE_OBJ_REQUEST_CODE = 1;
+    private static int SEARCH_OBJ_REQUEST_CODE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +167,12 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
         fabDate = findViewById(R.id.fabDateSearch);
 
         progressBar = findViewById(R.id.progress_bar);
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setMessage("Carregando");
+
+        loadData();
     }
 
     public void loadData(){
@@ -484,18 +533,137 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
         });
     }
 
+    public void loadFilteredData(final String jsonParams){
+        call = new RetrofitConfig().getFilteredObjRequest().getFilteredObjects("non_deleted", "0", String.valueOf(limit), jsonParams.toString());
+        call.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
+            @Override
+            public void onResponse(Call<ArrayList<RecyclerViewItem>> call, Response<ArrayList<RecyclerViewItem>> response) {
+                final ArrayList<RecyclerViewItem> itemsList = response.body();
+                for (int i = 0; i < itemsList.size(); i++) {
+                    Call<ResponseBody> imgCall = new RetrofitConfig().getObjThumbRequest().getObjThumb(itemsList.get(i).getFoto());
+                    final int finalI = i;
+                    imgCall.enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if (response.body() != null) {
+                                itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                            } else {
+                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                        }
+                    });
+                }
+                itemList.clear();
+                itemList.addAll(itemsList);
+                if(itemsList.size() == limit){
+                    Log.e("teste","NULL");
+                    itemList.add(null);
+                }
+                recyclerListAdapter = new RecyclerListAdapter(getApplicationContext(), (ArrayList<RecyclerViewItem>)  itemList, ListObjActivity.this, new OnLoadMoreListener() {
+                    @Override
+                    public void onLoadMore(int position) {
+                        loadMoreFilteredData(jsonParams,position);
+                    }
+                });
+                recyclerView.setItemAnimator(new DefaultItemAnimator());
+                progressBar.setVisibility(View.GONE);
+                recyclerView.setAdapter(recyclerListAdapter);
+                recyclerView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<RecyclerViewItem>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public void loadMoreFilteredData(String jsonParams, int skip){
+        searchDateCall = new RetrofitConfig().getFilteredObjRequest().getFilteredObjects("non_deleted", String.valueOf(skip), String.valueOf(limit), jsonParams.toString());
+        searchDateCall.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
+            @Override
+            public void onResponse(Call<ArrayList<RecyclerViewItem>> call, Response<ArrayList<RecyclerViewItem>> response) {
+                final ArrayList<RecyclerViewItem> itemsList = response.body();
+                for(int i=0 ; i<itemsList.size() ; i++){
+                    Call<ResponseBody> imgCall = new RetrofitConfig().getObjThumbRequest().getObjThumb(itemsList.get(i).getFoto());
+                    final int finalI = i;
+                    imgCall.enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if(response.body() != null){
+                                itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                            } else {
+                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                        }
+                    });
+                }
+//                itemList.clear();
+//                itemList.addAll(itemsList);
+                if(itemsList.size() == limit){
+                    itemsList.add(null);
+                }
+
+                recyclerListAdapter.removeLastItem();
+                recyclerListAdapter.setLoaded();
+                recyclerListAdapter.update(itemsList);
+
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<RecyclerViewItem>> call, Throwable t) {
+
+            }
+        });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_list_obj,menu);
         searchItem = menu.findItem(R.id.search_btn);
-        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        final SearchView searchView = (SearchView) searchItem.getActionView();
         searchView.setOnQueryTextListener(this);
+        searchView.setInputType(InputType.TYPE_CLASS_NUMBER);
+        searchView.setQueryHint("Pesquisar por código");
         searchItem.setVisible(false);
 
         searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
+                fabDate.setVisibility(View.GONE);
                 return true;
             }
 
@@ -506,6 +674,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                         searchNameCall.cancel();
                     }
                 }
+                fabDate.setVisibility(View.VISIBLE);
 
 //                List<RecyclerViewItem> backupListCopy = new ArrayList<RecyclerViewItem>();
 //                backupListCopy.addAll(recyclerListAdapter.getItemListBackup());
@@ -519,7 +688,6 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
 //                    recyclerView.setVisibility(View.VISIBLE);
 //                }
 //                fabDate.setVisibility(View.VISIBLE);
-                loadData();
                 return true;
             }
         });
@@ -542,9 +710,18 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
     @Override
     protected void onResume() {
         super.onResume();
-        fabDate.setImageResource(R.drawable.ic_calendar);
-        fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
-        isFabSeted = false;
+//        fabDate.setImageResource(R.drawable.ic_calendar);
+//        fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
+//        isFabSeted = false;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(isFabSeted){
+            closeFilter();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -570,7 +747,6 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
     @Override
     protected void onStart() {
         super.onStart();
-        loadData();
     }
 
     @Override
@@ -604,10 +780,32 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        recyclerView.setVisibility(View.GONE);
-        progressBar.setVisibility(View.VISIBLE);
-        fabDate.setVisibility(View.GONE);
-        loadDataName(query);
+        progressDialog.show();
+        final Intent showObject = new Intent(this, VisualizarObjActivity.class);
+        final Intent objNotFound = new Intent(this, ObjNotFoundActivity.class);
+        final Bundle bundle = new Bundle();
+        Call<Item> call = new RetrofitConfig().getObjDataRequest().getObjData(query);
+        call.enqueue(new Callback<Item>() {
+            @Override
+            public void onResponse(Call<Item> call, Response<Item> response) {
+                Item item = response.body();
+                bundle.putString("codigo", item.getCodigo());
+                bundle.putString("foto", item.getFoto());
+                showObject.putExtras(bundle);
+                startActivityForResult(showObject, SEARCH_OBJ_REQUEST_CODE);
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<Item> call, Throwable t) {
+                startActivity(objNotFound);
+                progressDialog.dismiss();
+            }
+        });
+//        recyclerView.setVisibility(View.GONE);
+//        progressBar.setVisibility(View.VISIBLE);
+//        fabDate.setVisibility(View.GONE);
+//        loadDataName(query);
 //        try {
 //            final ArrayList<RecyclerViewItem> filteredModelList = new SearchObjByNameRequest().execute(query,"non_deleted").get();
 //            if(filteredModelList != null){
@@ -682,9 +880,63 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
             Bundle bundle = new Bundle();
             bundle.putString("codigo", recyclerListAdapter.getItemList().get(position).getCodigo());
             bundle.putString("foto", recyclerListAdapter.getItemList().get(position).getFoto());
+            bundle.putInt("index", position);
             Intent intent = new Intent(this, VisualizarObjActivity.class);
             intent.putExtras(bundle);
-            startActivity(intent);
+            startActivityForResult(intent, DELETE_OBJ_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == DELETE_OBJ_REQUEST_CODE && resultCode == RESULT_OK){
+            if(data.getBooleanExtra("deleted",false)){
+                recyclerListAdapter.removeItem(data.getIntExtra("index",0));
+            } else {
+                if (data.getBooleanExtra("edited", false)) {
+                    Item itemSingleton = ItemSingleton.getInstance().getItemSingleton();
+                    RecyclerViewItem recyclerViewItem = new RecyclerViewItem();
+                    recyclerViewItem.setCodigo(itemSingleton.getCodigo());
+                    recyclerViewItem.setDataEntrada(itemSingleton.getDataEntrada());
+                    recyclerViewItem.setNome(itemSingleton.getNome());
+                    recyclerViewItem.setFoto(itemSingleton.getFoto());
+
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(itemSingleton.getImg(), 0, itemSingleton.getImg().length);
+                    bitmap = Bitmap.createScaledBitmap(bitmap, (int) (bitmap.getWidth() * 0.1), (int) (bitmap.getHeight() * 0.1), true);
+                    recyclerViewItem.setImg(bitmap);
+
+                    int position = data.getIntExtra("index", 0);
+
+                    recyclerListAdapter.getItemList().set(position, recyclerViewItem);
+                    recyclerListAdapter.notifyItemChanged(position);
+                }
+            }
+        } else if(requestCode == SEARCH_OBJ_REQUEST_CODE && resultCode == RESULT_OK){
+            for(int i=0 ; i<recyclerListAdapter.getItemList().size() ; i++){
+                if(recyclerListAdapter.getItemList().get(i).getCodigo().equals(data.getStringExtra("codigo"))){
+                    if(data.getBooleanExtra("deleted",false)){
+                        recyclerListAdapter.removeItem(i);
+                    } else {
+                        if (data.getBooleanExtra("edited", false)) {
+                            Item itemSingleton = ItemSingleton.getInstance().getItemSingleton();
+                            RecyclerViewItem recyclerViewItem = new RecyclerViewItem();
+                            recyclerViewItem.setCodigo(itemSingleton.getCodigo());
+                            recyclerViewItem.setDataEntrada(itemSingleton.getDataEntrada());
+                            recyclerViewItem.setNome(itemSingleton.getNome());
+                            recyclerViewItem.setFoto(itemSingleton.getFoto());
+
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(itemSingleton.getImg(), 0, itemSingleton.getImg().length);
+                            bitmap = Bitmap.createScaledBitmap(bitmap, (int) (bitmap.getWidth() * 0.1), (int) (bitmap.getHeight() * 0.1), true);
+                            recyclerViewItem.setImg(bitmap);
+
+                            recyclerListAdapter.getItemList().set(i, recyclerViewItem);
+                            recyclerListAdapter.notifyItemChanged(i);
+                        }
+                    }
+                    break;
+                }
+            }
         }
     }
 
@@ -802,21 +1054,36 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
             snackbar.show();
 
             recyclerListAdapter.notifyDataSetChanged();
-        }
+    }
 
-    public void filterDate(View view) {
-        if (!isFabSeted) {
+    public void filter(View view){
+        if(!isFabSeted){
             LayoutInflater layoutInflater = getLayoutInflater();
-            View v = layoutInflater.inflate(R.layout.date_dialog, null);
-
+            View v = layoutInflater.inflate(R.layout.filter_dialog, null);
             final DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            final JSONObject jsonObject = new JSONObject();
 
-            dateStart = v.findViewById(R.id.startDate);
-            dateEnd = v.findViewById(R.id.endDate);
-            dateStart.setText(dateFormat.format(calendarStart.getTime()));
-            dateEnd.setText(dateFormat.format(calendarEnd.getTime()));
+            nameCheckbox = v.findViewById(R.id.nameCheckbox);
+            localCheckbox = v.findViewById(R.id.localCheckbox);
+            dateCheckbox = v.findViewById(R.id.dateCheckbox);
+            stateCheckbox = v.findViewById(R.id.stateCheckbox);
+            etFilterName = v.findViewById(R.id.etFilterName);
+            etFilterBloco = v.findViewById(R.id.etFilterBloco);
+            etFilterSala = v.findViewById(R.id.etFilterSala);
+            etFilterStartDate = v.findViewById(R.id.etFilterStartDate);
+            etFilterEndDate = v.findViewById(R.id.etFilterEndDate);
+            unityFilterSpinner = v.findViewById(R.id.unityFilterSpinner);
+            stateFilterSpinner = v.findViewById(R.id.stateFilterSpinner);
 
-            dateStart.setOnClickListener(new View.OnClickListener() {
+            ArrayAdapter<String> unityFilterAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, UNIT_SPINNER_OPTIONS);
+            unityFilterSpinner.setEnabled(false);
+            unityFilterSpinner.setAdapter(unityFilterAdapter);
+
+            ArrayAdapter<String> stateFilterAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, STATE_SPINNER_OPTIONS);
+            stateFilterSpinner.setEnabled(false);
+            stateFilterSpinner.setAdapter(stateFilterAdapter);
+
+            etFilterStartDate.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
@@ -825,14 +1092,14 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                             calendarStart.set(Calendar.YEAR, i);
                             calendarStart.set(Calendar.MONTH, i1);
                             calendarStart.set(Calendar.DAY_OF_MONTH, i2);
-                            dateStart.setText(dateFormat.format(calendarStart.getTime()));
+                            etFilterStartDate.setText(dateFormat.format(calendarStart.getTime()));
                         }
                     }, calendarStart.get(Calendar.YEAR), calendarStart.get(Calendar.MONTH), calendarStart.get(Calendar.DAY_OF_MONTH));
                     datePickerDialog.show();
                 }
             });
 
-            dateEnd.setOnClickListener(new View.OnClickListener() {
+            etFilterEndDate.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
@@ -841,63 +1108,339 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                             calendarEnd.set(Calendar.YEAR, i);
                             calendarEnd.set(Calendar.MONTH, i1);
                             calendarEnd.set(Calendar.DAY_OF_MONTH, i2);
-                            dateEnd.setText(dateFormat.format(calendarEnd.getTime()));
+                            etFilterEndDate.setText(dateFormat.format(calendarEnd.getTime()));
                         }
                     }, calendarEnd.get(Calendar.YEAR), calendarEnd.get(Calendar.MONTH), calendarEnd.get(Calendar.DAY_OF_MONTH));
                     datePickerDialog.show();
                 }
             });
 
-            AlertDialog alertDialog;
+            nameCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if(nameCheckbox.isChecked()){
+                        etFilterName.setEnabled(true);
+                    } else {
+                        etFilterName.setEnabled(false);
+                    }
+                }
+            });
+
+            localCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if(localCheckbox.isChecked()){
+                        unityFilterSpinner.setEnabled(true);
+                        etFilterBloco.setEnabled(true);
+                        etFilterSala.setEnabled(true);
+                    } else {
+                        unityFilterSpinner.setEnabled(false);
+                        etFilterBloco.setEnabled(false);
+                        etFilterSala.setEnabled(false);
+                    }
+                }
+            });
+
+            dateCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if(dateCheckbox.isChecked()){
+                        etFilterStartDate.setEnabled(true);
+                        etFilterEndDate.setEnabled(true);
+                    } else {
+                        etFilterStartDate.setEnabled(false);
+                        etFilterEndDate.setEnabled(false);
+                    }
+                }
+            });
+
+            stateCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if(stateCheckbox.isChecked()){
+                        stateFilterSpinner.setEnabled(true);
+                    } else {
+                        stateFilterSpinner.setEnabled(false);
+                    }
+                }
+            });
+
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Pesquisar por data");
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dark_red)));
-                    fabDate.setImageResource(R.drawable.ic_close);
-                    isFabSeted = true;
-
-                    String dateStart = DateHandler.toSqlDate(calendarStart.getTime());
-                    String dateEnd = DateHandler.toSqlDate(calendarEnd.getTime());
-
-                    recyclerView.setVisibility(View.GONE);
-                    progressBar.setVisibility(View.VISIBLE);
-                    searchItem.setVisible(false);
-
-                    loadDataDate(dateStart,dateEnd);
-
-
-                }
-            });
-            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                }
-            });
+            builder.setTitle("Pesquisar objetos");
+            builder.setPositiveButton("OK", null);
+            builder.setNegativeButton("CANCELAR", null);
             builder.setView(v);
-            alertDialog = builder.create();
+            final AlertDialog alertDialog = builder.create();
+            alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                @Override
+                public void onShow(DialogInterface dialogInterface) {
+                    Button button = ((AlertDialog) alertDialog).getButton(AlertDialog.BUTTON_POSITIVE);
+                    button.setOnClickListener(new View.OnClickListener() {
+
+                        @Override
+                        public void onClick(View view) {
+                            if(!nameCheckbox.isChecked() && !localCheckbox.isChecked() && !dateCheckbox.isChecked() && !stateCheckbox.isChecked()){
+                                AlertDialog.Builder builder1 = new AlertDialog.Builder(ListObjActivity.this);
+                                builder1.setMessage("Selecione pelo menos uma opção de pesquisa");
+                                builder1.setPositiveButton("OK", null);
+                                AlertDialog dialog = builder1.create();
+                                dialog.show();
+                            } else {
+                                fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dark_red)));
+                                fabDate.setImageResource(R.drawable.ic_close);
+                                isFabSeted = true;
+
+                                searchItem.setVisible(false);
+                                recyclerView.setVisibility(View.GONE);
+                                progressBar.setVisibility(View.VISIBLE);
+                                searchItem.setVisible(false);
+                                try {
+                                    if (!nameCheckbox.isChecked() && !localCheckbox.isChecked() && !dateCheckbox.isChecked() && stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", "");
+                                        jsonObject.put("unity", "");
+                                        jsonObject.put("bloco", "");
+                                        jsonObject.put("sala", "");
+                                        jsonObject.put("start_date", "");
+                                        jsonObject.put("end_date", "");
+                                        jsonObject.put("state", stateFilterSpinner.getSelectedItem().toString());
+                                    } else if (!nameCheckbox.isChecked() && !localCheckbox.isChecked() && dateCheckbox.isChecked() && !stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", "");
+                                        jsonObject.put("unity", "");
+                                        jsonObject.put("bloco", "");
+                                        jsonObject.put("sala", "");
+                                        jsonObject.put("start_date", DateHandler.toSqlDate(calendarStart.getTime()));
+                                        jsonObject.put("end_date", DateHandler.toSqlDate(calendarEnd.getTime()));
+                                        jsonObject.put("state", "");
+                                    } else if (!nameCheckbox.isChecked() && !localCheckbox.isChecked() && dateCheckbox.isChecked() && stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", "");
+                                        jsonObject.put("unity", "");
+                                        jsonObject.put("bloco", "");
+                                        jsonObject.put("sala", "");
+                                        jsonObject.put("start_date", DateHandler.toSqlDate(calendarStart.getTime()));
+                                        jsonObject.put("end_date", DateHandler.toSqlDate(calendarEnd.getTime()));
+                                        jsonObject.put("state", stateFilterSpinner.getSelectedItem().toString());
+                                    } else if (!nameCheckbox.isChecked() && localCheckbox.isChecked() && !dateCheckbox.isChecked() && !stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", "");
+                                        jsonObject.put("unity", unityFilterSpinner.getSelectedItem().toString());
+                                        jsonObject.put("bloco", etFilterBloco.getText().toString());
+                                        jsonObject.put("sala", etFilterSala.getText().toString());
+                                        jsonObject.put("start_date", "");
+                                        jsonObject.put("end_date", "");
+                                        jsonObject.put("state", "");
+                                    } else if (!nameCheckbox.isChecked() && localCheckbox.isChecked() && !dateCheckbox.isChecked() && stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", "");
+                                        jsonObject.put("unity", unityFilterSpinner.getSelectedItem().toString());
+                                        jsonObject.put("bloco", etFilterBloco.getText().toString());
+                                        jsonObject.put("sala", etFilterSala.getText().toString());
+                                        jsonObject.put("start_date", "");
+                                        jsonObject.put("end_date", "");
+                                        jsonObject.put("state", stateFilterSpinner.getSelectedItem().toString());
+                                    } else if (!nameCheckbox.isChecked() && localCheckbox.isChecked() && dateCheckbox.isChecked() && !stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", "");
+                                        jsonObject.put("unity", unityFilterSpinner.getSelectedItem().toString());
+                                        jsonObject.put("bloco", etFilterBloco.getText().toString());
+                                        jsonObject.put("sala", etFilterSala.getText().toString());
+                                        jsonObject.put("start_date", DateHandler.toSqlDate(calendarStart.getTime()));
+                                        jsonObject.put("end_date", DateHandler.toSqlDate(calendarEnd.getTime()));
+                                        jsonObject.put("state", "");
+                                    } else if (!nameCheckbox.isChecked() && localCheckbox.isChecked() && dateCheckbox.isChecked() && stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", "");
+                                        jsonObject.put("unity", unityFilterSpinner.getSelectedItem().toString());
+                                        jsonObject.put("bloco", etFilterBloco.getText().toString());
+                                        jsonObject.put("sala", etFilterSala.getText().toString());
+                                        jsonObject.put("start_date", DateHandler.toSqlDate(calendarStart.getTime()));
+                                        jsonObject.put("end_date", DateHandler.toSqlDate(calendarEnd.getTime()));
+                                        jsonObject.put("state", stateFilterSpinner.getSelectedItem().toString());
+                                    } else if (nameCheckbox.isChecked() && !localCheckbox.isChecked() && !dateCheckbox.isChecked() && !stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", etFilterName.getText().toString());
+                                        jsonObject.put("unity", "");
+                                        jsonObject.put("bloco", "");
+                                        jsonObject.put("sala", "");
+                                        jsonObject.put("start_date", "");
+                                        jsonObject.put("end_date", "");
+                                        jsonObject.put("state", "");
+                                    } else if (nameCheckbox.isChecked() && !localCheckbox.isChecked() && !dateCheckbox.isChecked() && stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", etFilterName.getText().toString());
+                                        jsonObject.put("unity", "");
+                                        jsonObject.put("bloco", "");
+                                        jsonObject.put("sala", "");
+                                        jsonObject.put("start_date", "");
+                                        jsonObject.put("end_date", "");
+                                        jsonObject.put("state", stateFilterSpinner.getSelectedItem().toString());
+                                    } else if (nameCheckbox.isChecked() && !localCheckbox.isChecked() && dateCheckbox.isChecked() && !stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", etFilterName.getText().toString());
+                                        jsonObject.put("unity", "");
+                                        jsonObject.put("bloco", "");
+                                        jsonObject.put("sala", "");
+                                        jsonObject.put("start_date", DateHandler.toSqlDate(calendarStart.getTime()));
+                                        jsonObject.put("end_date", DateHandler.toSqlDate(calendarEnd.getTime()));
+                                        jsonObject.put("state", "");
+                                    } else if (nameCheckbox.isChecked() && !localCheckbox.isChecked() && dateCheckbox.isChecked() && stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", etFilterName.getText().toString());
+                                        jsonObject.put("unity", "");
+                                        jsonObject.put("bloco", "");
+                                        jsonObject.put("sala", "");
+                                        jsonObject.put("start_date", DateHandler.toSqlDate(calendarStart.getTime()));
+                                        jsonObject.put("end_date", DateHandler.toSqlDate(calendarEnd.getTime()));
+                                        jsonObject.put("state", stateFilterSpinner.getSelectedItem().toString());
+                                    } else if (nameCheckbox.isChecked() && localCheckbox.isChecked() && !dateCheckbox.isChecked() && !stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", etFilterName.getText().toString());
+                                        jsonObject.put("unity", unityFilterSpinner.getSelectedItem().toString());
+                                        jsonObject.put("bloco", etFilterBloco.getText().toString());
+                                        jsonObject.put("sala", etFilterSala.getText().toString());
+                                        jsonObject.put("start_date", "");
+                                        jsonObject.put("end_date", "");
+                                        jsonObject.put("state", "");
+                                    } else if (nameCheckbox.isChecked() && localCheckbox.isChecked() && !dateCheckbox.isChecked() && stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", etFilterName.getText().toString());
+                                        jsonObject.put("unity", unityFilterSpinner.getSelectedItem().toString());
+                                        jsonObject.put("bloco", etFilterBloco.getText().toString());
+                                        jsonObject.put("sala", etFilterSala.getText().toString());
+                                        jsonObject.put("start_date", "");
+                                        jsonObject.put("end_date", "");
+                                        jsonObject.put("state", stateFilterSpinner.getSelectedItem().toString());
+                                    } else if (nameCheckbox.isChecked() && localCheckbox.isChecked() && dateCheckbox.isChecked() && !stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", etFilterName.getText().toString());
+                                        jsonObject.put("unity", unityFilterSpinner.getSelectedItem().toString());
+                                        jsonObject.put("bloco", etFilterBloco.getText().toString());
+                                        jsonObject.put("sala", etFilterSala.getText().toString());
+                                        jsonObject.put("start_date", DateHandler.toSqlDate(calendarStart.getTime()));
+                                        jsonObject.put("end_date", DateHandler.toSqlDate(calendarEnd.getTime()));
+                                        jsonObject.put("state", "");
+                                    } else if (nameCheckbox.isChecked() && localCheckbox.isChecked() && dateCheckbox.isChecked() && stateCheckbox.isChecked()) {
+                                        jsonObject.put("name", etFilterName.getText().toString());
+                                        jsonObject.put("unity", unityFilterSpinner.getSelectedItem().toString());
+                                        jsonObject.put("bloco", etFilterBloco.getText().toString());
+                                        jsonObject.put("sala", etFilterSala.getText().toString());
+                                        jsonObject.put("start_date", DateHandler.toSqlDate(calendarStart.getTime()));
+                                        jsonObject.put("end_date", DateHandler.toSqlDate(calendarEnd.getTime()));
+                                        jsonObject.put("state", stateFilterSpinner.getSelectedItem().toString());
+                                    } else {
+
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                                Log.e("data", jsonObject.toString());
+                                loadFilteredData(jsonObject.toString());
+                                alertDialog.dismiss();
+                            }
+                        }
+                    });
+                }
+            });
             alertDialog.show();
         } else {
-            if(searchDateCall.isExecuted()){
-                searchDateCall.cancel();
-            }
-//            recyclerListAdapter.replaceAll((ArrayList<RecyclerViewItem>) recyclerListAdapter.getItemListBackup());
-//            if(recyclerListAdapter.getItemList().size() < totalObjNum){
-//                recyclerListAdapter.getItemList().add(null);
-//            }
-//            recyclerListAdapter.getFilteredItemsByDate().clear();
-            fabDate.setImageResource(R.drawable.ic_calendar);
-            fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
-            searchItem.setVisible(true);
-            isFabSeted = false;
-//            if(recyclerView.getVisibility() == View.GONE){
-//                progressBar.setVisibility(View.GONE);
-//                recyclerView.setVisibility(View.VISIBLE);
-//            }
-            loadData();
+            closeFilter();
         }
     }
+
+    public void closeFilter(){
+        if(call.isExecuted()){
+            call.cancel();
+        }
+        fabDate.setImageResource(R.drawable.ic_filter);
+        fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
+        isFabSeted = false;
+        searchItem.setVisible(true);
+        loadData();
+    }
+
+//    public void filterDate(View view) {
+//        if (!isFabSeted) {
+//            LayoutInflater layoutInflater = getLayoutInflater();
+//            View v = layoutInflater.inflate(R.layout.date_dialog, null);
+//
+//            final DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+//
+//            dateStart = v.findViewById(R.id.startDate);
+//            dateEnd = v.findViewById(R.id.endDate);
+//            dateStart.setText(dateFormat.format(calendarStart.getTime()));
+//            dateEnd.setText(dateFormat.format(calendarEnd.getTime()));
+//
+//            dateStart.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
+//                        @Override
+//                        public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+//                            calendarStart.set(Calendar.YEAR, i);
+//                            calendarStart.set(Calendar.MONTH, i1);
+//                            calendarStart.set(Calendar.DAY_OF_MONTH, i2);
+//                            dateStart.setText(dateFormat.format(calendarStart.getTime()));
+//                        }
+//                    }, calendarStart.get(Calendar.YEAR), calendarStart.get(Calendar.MONTH), calendarStart.get(Calendar.DAY_OF_MONTH));
+//                    datePickerDialog.show();
+//                }
+//            });
+//
+//            dateEnd.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    DatePickerDialog datePickerDialog = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
+//                        @Override
+//                        public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+//                            calendarEnd.set(Calendar.YEAR, i);
+//                            calendarEnd.set(Calendar.MONTH, i1);
+//                            calendarEnd.set(Calendar.DAY_OF_MONTH, i2);
+//                            dateEnd.setText(dateFormat.format(calendarEnd.getTime()));
+//                        }
+//                    }, calendarEnd.get(Calendar.YEAR), calendarEnd.get(Calendar.MONTH), calendarEnd.get(Calendar.DAY_OF_MONTH));
+//                    datePickerDialog.show();
+//                }
+//            });
+//
+//            AlertDialog alertDialog;
+//            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//            builder.setTitle("Pesquisar por data");
+//            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//                @Override
+//                public void onClick(DialogInterface dialogInterface, int i) {
+//                    fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.dark_red)));
+//                    fabDate.setImageResource(R.drawable.ic_close);
+//                    isFabSeted = true;
+//
+//                    String dateStart = DateHandler.toSqlDate(calendarStart.getTime());
+//                    String dateEnd = DateHandler.toSqlDate(calendarEnd.getTime());
+//
+//                    recyclerView.setVisibility(View.GONE);
+//                    progressBar.setVisibility(View.VISIBLE);
+//                    searchItem.setVisible(false);
+//
+//                    loadDataDate(dateStart,dateEnd);
+//
+//
+//                }
+//            });
+//            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+//                @Override
+//                public void onClick(DialogInterface dialogInterface, int i) {
+//                }
+//            });
+//            builder.setView(v);
+//            alertDialog = builder.create();
+//            alertDialog.show();
+//        } else {
+//            if(searchDateCall.isExecuted()){
+//                searchDateCall.cancel();
+//            }
+////            recyclerListAdapter.replaceAll((ArrayList<RecyclerViewItem>) recyclerListAdapter.getItemListBackup());
+////            if(recyclerListAdapter.getItemList().size() < totalObjNum){
+////                recyclerListAdapter.getItemList().add(null);
+////            }
+////            recyclerListAdapter.getFilteredItemsByDate().clear();
+//            fabDate.setImageResource(R.drawable.ic_calendar);
+//            fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
+//            searchItem.setVisible(true);
+//            isFabSeted = false;
+////            if(recyclerView.getVisibility() == View.GONE){
+////                progressBar.setVisibility(View.GONE);
+////                recyclerView.setVisibility(View.VISIBLE);
+////            }
+//            loadData();
+//        }
+//    }
 
 
 }
