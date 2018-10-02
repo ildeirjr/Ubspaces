@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.util.Calendar;
 
 import br.ufop.ildeir.ubspaces.R;
+import br.ufop.ildeir.ubspaces.miscellaneous.DBResponseCodes;
 import br.ufop.ildeir.ubspaces.miscellaneous.DateHandler;
 import br.ufop.ildeir.ubspaces.network.RetrofitConfig;
 import br.ufop.ildeir.ubspaces.singleton.SessionManager;
@@ -227,12 +228,13 @@ public class CadastrarObjActivity extends AppCompatActivity {
                         @Override
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             try {
-                                if(response.body().string().equals("1")){
+                                String result = response.body().string();
+                                if(result.equals(DBResponseCodes.RESULT_OK)){
                                     if(imgSeted){
                                         jsonImg.put("nome",jsonObject.getString("foto"));
-                                        jsonImg.put("img",bmptoString());
-                                        createImgThumb();
-                                        jsonImg.put("imgThumb", Base64.encodeToString(bmpToByteArray(),Base64.DEFAULT));
+                                        jsonImg.put("img",bmptoString(img));
+                                        Bitmap bmp = createImgThumb();
+                                        jsonImg.put("imgThumb", Base64.encodeToString(bmpToByteArray(bmp),Base64.DEFAULT));
                                         RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonImg.toString());
                                         Call<ResponseBody> imgCall = new RetrofitConfig().postObjImgRequest().postObjImg(body);
                                         imgCall.enqueue(new Callback<ResponseBody>() {
@@ -252,8 +254,13 @@ public class CadastrarObjActivity extends AppCompatActivity {
                                     Toast.makeText(CadastrarObjActivity.this, "Objeto cadastrado com sucesso!", Toast.LENGTH_SHORT).show();
                                     finish();
                                 } else {
-                                    progressDialog.dismiss();
-                                    Toast.makeText(CadastrarObjActivity.this, "Erro ao cadastrar objeto. Tente novamente.", Toast.LENGTH_SHORT).show();
+                                    if(result.equals(DBResponseCodes.DUPLICATE_ENTRY)){
+                                        progressDialog.dismiss();
+                                        Toast.makeText(CadastrarObjActivity.this, "Este código já existe. Informe outro.", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        progressDialog.dismiss();
+                                        Toast.makeText(CadastrarObjActivity.this, "Erro ao cadastrar objeto. Tente novamente.", Toast.LENGTH_SHORT).show();
+                                    }
                                 }
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -374,11 +381,11 @@ public class CadastrarObjActivity extends AppCompatActivity {
         }
     }
 
-    public String bmptoString(){
-        return Base64.encodeToString(bmpToByteArray(),Base64.DEFAULT);
+    public String bmptoString(Bitmap img){
+        return Base64.encodeToString(bmpToByteArray(img),Base64.DEFAULT);
     }
 
-    public byte[] bmpToByteArray(){
+    public byte[] bmpToByteArray(Bitmap img){
         if(img == null){
             img = BitmapFactory.decodeResource(getResources(),R.drawable.no_foto);
         }
@@ -394,8 +401,8 @@ public class CadastrarObjActivity extends AppCompatActivity {
         return b_stream.toByteArray();
     }
 
-    public void createImgThumb(){
-        img = Bitmap.createScaledBitmap(img,(int) (img.getWidth()*0.1),(int) (img.getHeight()*0.1),true);
+    public Bitmap createImgThumb(){
+        return Bitmap.createScaledBitmap(img,(int) (img.getWidth()*0.1),(int) (img.getHeight()*0.1),true);
     }
 
     public boolean validarCampo(TextInputLayout til){

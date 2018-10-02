@@ -122,6 +122,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Call<JsonObject> call, Throwable t) {
+                    t.printStackTrace();
                     Toast.makeText(getApplicationContext(), "Dados inválidos!", Toast.LENGTH_SHORT).show();
                     progressBar.setVisibility(View.GONE);
                     linearLayout.setVisibility(View.VISIBLE);
@@ -174,6 +175,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         final Intent showObject = new Intent(this,VisualizeObjActivity.class);
         final Intent objNotFound = new Intent(this,ObjNotFoundActivity.class);
+        final Intent showDeletedObject = new Intent(this, DeletedObjActivity.class);
         showObject.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode,resultCode,data);
         if(intentResult != null){
@@ -199,6 +201,11 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<Item> call, Response<Item> response) {
                         final Item item = response.body();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("codigo", item.getCodigo());
+                        bundle.putString("foto", item.getFoto());
+                        showObject.putExtras(bundle);
+                        showDeletedObject.putExtras(bundle);
                         Log.e("teste","nao é null");
                         Call<ResponseBody> imgCall = new RetrofitConfig().getObjImgRequestForComumUser().getObjImg(item.getFoto());
                         imgCall.enqueue(new Callback<ResponseBody>() {
@@ -208,7 +215,11 @@ public class LoginActivity extends AppCompatActivity {
                                     try {
                                         item.setImg(response.body().bytes());
                                         ItemSingleton.getInstance().setItemSingleton(item);
-                                        startActivity(showObject);
+                                        if(item.getEstado().equals("Excluido")){
+                                            startActivity(showDeletedObject);
+                                        } else {
+                                            startActivity(showObject);
+                                        }
                                         progressDialog.dismiss();
                                     } catch (IOException e) {
                                         e.printStackTrace();
@@ -222,7 +233,11 @@ public class LoginActivity extends AppCompatActivity {
                                                 try {
                                                     item.setImg(response.body().bytes());
                                                     ItemSingleton.getInstance().setItemSingleton(item);
-                                                    startActivity(showObject);
+                                                    if(item.getEstado().equals("Excluido")){
+                                                        startActivity(showDeletedObject);
+                                                    } else {
+                                                        startActivity(showObject);
+                                                    }
                                                     progressDialog.dismiss();
                                                 } catch (IOException e) {
                                                     e.printStackTrace();

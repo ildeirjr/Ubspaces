@@ -38,18 +38,12 @@
 
             </LinearLayout>
 
-
-
-
-
-
             <CheckBox
                 android:id="@+id/localCheckbox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Localização"
                 android:layout_weight="1"/>
-
 
             <LinearLayout
                 android:id="@+id/localLayout"
@@ -79,10 +73,6 @@
                     android:hint="Sala" />
 
             </LinearLayout>
-
-
-
-
 
             <CheckBox
                 android:id="@+id/dateCheckbox"
@@ -114,32 +104,6 @@
                     android:focusable="false" />
 
             </LinearLayout>
-
-
-            <CheckBox
-                android:id="@+id/stateCheckbox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Estado"
-                android:layout_weight="1"/>
-
-            <LinearLayout
-                android:id="@+id/stateLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <Spinner
-                    android:id="@+id/stateFilterSpinner"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
-
-                </Spinner>
-
-            </LinearLayout>
-
 
         </LinearLayout>
 

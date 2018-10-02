@@ -11,8 +11,6 @@ import android.os.Build;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v4.widget.SearchViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -35,21 +33,19 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import br.ufop.ildeir.ubspaces.R;
 import br.ufop.ildeir.ubspaces.adapters.RecyclerListAdapter;
@@ -60,15 +56,8 @@ import br.ufop.ildeir.ubspaces.miscellaneous.WrapContentLinearLayoutManager;
 import br.ufop.ildeir.ubspaces.network.RetrofitConfig;
 import br.ufop.ildeir.ubspaces.objects.Item;
 import br.ufop.ildeir.ubspaces.objects.RecyclerViewItem;
-import br.ufop.ildeir.ubspaces.requests.delete.DeleteObjRequest;
-import br.ufop.ildeir.ubspaces.requests.get.GetObjDataRequest;
-import br.ufop.ildeir.ubspaces.requests.get.GetObjImgRequest;
-import br.ufop.ildeir.ubspaces.requests.get.GetUserRequest;
 import br.ufop.ildeir.ubspaces.singleton.ItemSingleton;
-import br.ufop.ildeir.ubspaces.singleton.ObjectListSingleton;
-import br.ufop.ildeir.ubspaces.singleton.SessionManager;
 import br.ufop.ildeir.ubspaces.singleton.UserSingleton;
-import br.ufop.ildeir.ubspaces.utils.Utils;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -299,122 +288,122 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
         });
     }
 
-    public void loadDataName(final String query){
-        searchNameCall = new RetrofitConfig().searchByNameRequest().searchByName(query, "non_deleted","0", String.valueOf(limit));
-        searchNameCall.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
-            @Override
-            public void onResponse(Call<ArrayList<RecyclerViewItem>> call, Response<ArrayList<RecyclerViewItem>> response) {
-                final ArrayList<RecyclerViewItem> itemsList = response.body();
-                for(int i=0 ; i<itemsList.size() ; i++){
-                    Call<ResponseBody> imgCall = new RetrofitConfig().getObjThumbRequest().getObjThumb(itemsList.get(i).getFoto());
-                    final int finalI = i;
-                    imgCall.enqueue(new Callback<ResponseBody>() {
-                        @Override
-                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                            if(response.body() != null){
-                                itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
-                            } else {
-                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
-                                call.enqueue(new Callback<ResponseBody>() {
-                                    @Override
-                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                        itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                                    }
-                                });
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                        }
-                    });
-                }
-                itemList.clear();
-                itemList.addAll(itemsList);
-                if(itemsList.size() == limit){
-                    Log.e("teste","NULL");
-                    itemList.add(null);
-                }
-                recyclerListAdapter = new RecyclerListAdapter(getApplicationContext(), (ArrayList<RecyclerViewItem>)  itemList, ListObjActivity.this, new OnLoadMoreListener() {
-                    @Override
-                    public void onLoadMore(int position) {
-                        loadMoreDataName(query, position);
-                    }
-                });
-                recyclerView.setItemAnimator(new DefaultItemAnimator());
-                recyclerView.setAdapter(recyclerListAdapter);
-                recyclerView.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
-                recyclerView.scrollToPosition(0);
-            }
-
-            @Override
-            public void onFailure(Call<ArrayList<RecyclerViewItem>> call, Throwable t) {
-
-            }
-        });
-    }
-
-    public void loadMoreDataName(String query, int skip){
-        Call<ArrayList<RecyclerViewItem>> call = new RetrofitConfig().searchByNameRequest().searchByName(query, "non_deleted",String.valueOf(skip), String.valueOf(limit));
-        call.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
-            @Override
-            public void onResponse(Call<ArrayList<RecyclerViewItem>> call, Response<ArrayList<RecyclerViewItem>> response) {
-                final ArrayList<RecyclerViewItem> itemsList = response.body();
-                for(int i=0 ; i<itemsList.size() ; i++){
-                    Call<ResponseBody> imgCall = new RetrofitConfig().getObjThumbRequest().getObjThumb(itemsList.get(i).getFoto());
-                    final int finalI = i;
-                    imgCall.enqueue(new Callback<ResponseBody>() {
-                        @Override
-                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                            if(response.body() != null){
-                                itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
-                            } else {
-                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
-                                call.enqueue(new Callback<ResponseBody>() {
-                                    @Override
-                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                        itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                                    }
-                                });
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                        }
-                    });
-                }
+//    public void loadDataName(final String query){
+//        searchNameCall = new RetrofitConfig().searchByIdRequest().searchById(query, "non_deleted","0", String.valueOf(limit));
+//        searchNameCall.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
+//            @Override
+//            public void onResponse(Call<ArrayList<RecyclerViewItem>> call, Response<ArrayList<RecyclerViewItem>> response) {
+//                final ArrayList<RecyclerViewItem> itemsList = response.body();
+//                for(int i=0 ; i<itemsList.size() ; i++){
+//                    Call<ResponseBody> imgCall = new RetrofitConfig().getObjThumbRequest().getObjThumb(itemsList.get(i).getFoto());
+//                    final int finalI = i;
+//                    imgCall.enqueue(new Callback<ResponseBody>() {
+//                        @Override
+//                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                            if(response.body() != null){
+//                                itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+//                            } else {
+//                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
+//                                call.enqueue(new Callback<ResponseBody>() {
+//                                    @Override
+//                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                                        itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+//                                    }
+//
+//                                    @Override
+//                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                                    }
+//                                });
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                        }
+//                    });
+//                }
 //                itemList.clear();
 //                itemList.addAll(itemsList);
-                if(itemsList.size() == limit){
-                    itemsList.add(null);
-                }
-
-                recyclerListAdapter.removeLastItem();
-                recyclerListAdapter.setLoaded();
-                recyclerListAdapter.update(itemsList);
-
-            }
-
-            @Override
-            public void onFailure(Call<ArrayList<RecyclerViewItem>> call, Throwable t) {
-
-            }
-        });
-    }
+//                if(itemsList.size() == limit){
+//                    Log.e("teste","NULL");
+//                    itemList.add(null);
+//                }
+//                recyclerListAdapter = new RecyclerListAdapter(getApplicationContext(), (ArrayList<RecyclerViewItem>)  itemList, ListObjActivity.this, new OnLoadMoreListener() {
+//                    @Override
+//                    public void onLoadMore(int position) {
+//                        loadMoreDataName(query, position);
+//                    }
+//                });
+//                recyclerView.setItemAnimator(new DefaultItemAnimator());
+//                recyclerView.setAdapter(recyclerListAdapter);
+//                recyclerView.setVisibility(View.VISIBLE);
+//                progressBar.setVisibility(View.GONE);
+//                recyclerView.scrollToPosition(0);
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ArrayList<RecyclerViewItem>> call, Throwable t) {
+//
+//            }
+//        });
+//    }
+//
+//    public void loadMoreDataName(String query, int skip){
+//        Call<ArrayList<RecyclerViewItem>> call = new RetrofitConfig().searchByIdRequest().searchById(query, "non_deleted",String.valueOf(skip), String.valueOf(limit));
+//        call.enqueue(new Callback<ArrayList<RecyclerViewItem>>() {
+//            @Override
+//            public void onResponse(Call<ArrayList<RecyclerViewItem>> call, Response<ArrayList<RecyclerViewItem>> response) {
+//                final ArrayList<RecyclerViewItem> itemsList = response.body();
+//                for(int i=0 ; i<itemsList.size() ; i++){
+//                    Call<ResponseBody> imgCall = new RetrofitConfig().getObjThumbRequest().getObjThumb(itemsList.get(i).getFoto());
+//                    final int finalI = i;
+//                    imgCall.enqueue(new Callback<ResponseBody>() {
+//                        @Override
+//                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                            if(response.body() != null){
+//                                itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+//                            } else {
+//                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
+//                                call.enqueue(new Callback<ResponseBody>() {
+//                                    @Override
+//                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                                        itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+//                                    }
+//
+//                                    @Override
+//                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                                    }
+//                                });
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                        }
+//                    });
+//                }
+////                itemList.clear();
+////                itemList.addAll(itemsList);
+//                if(itemsList.size() == limit){
+//                    itemsList.add(null);
+//                }
+//
+//                recyclerListAdapter.removeLastItem();
+//                recyclerListAdapter.setLoaded();
+//                recyclerListAdapter.update(itemsList);
+//
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ArrayList<RecyclerViewItem>> call, Throwable t) {
+//
+//            }
+//        });
+//    }
 
     public void loadDataDate(final String dateStart, final String dateEnd){
         searchDateCall = new RetrofitConfig().searchByDateRequest().searchByDate("non_deleted",dateStart,dateEnd,"0", String.valueOf(limit));
@@ -784,7 +773,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
         final Intent showObject = new Intent(this, VisualizarObjActivity.class);
         final Intent objNotFound = new Intent(this, ObjNotFoundActivity.class);
         final Bundle bundle = new Bundle();
-        Call<Item> call = new RetrofitConfig().getObjDataRequest().getObjData(query);
+        Call<Item> call = new RetrofitConfig().searchByIdRequest().searchById("non_deleted",query);
         call.enqueue(new Callback<Item>() {
             @Override
             public void onResponse(Call<Item> call, Response<Item> response) {
@@ -1076,12 +1065,15 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
             stateFilterSpinner = v.findViewById(R.id.stateFilterSpinner);
 
             ArrayAdapter<String> unityFilterAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, UNIT_SPINNER_OPTIONS);
-            unityFilterSpinner.setEnabled(false);
             unityFilterSpinner.setAdapter(unityFilterAdapter);
 
             ArrayAdapter<String> stateFilterAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, STATE_SPINNER_OPTIONS);
-            stateFilterSpinner.setEnabled(false);
             stateFilterSpinner.setAdapter(stateFilterAdapter);
+
+            final LinearLayout nameLayout = v.findViewById(R.id.nameLayout);
+            final LinearLayout localLayout = v.findViewById(R.id.localLayout);
+            final LinearLayout dateLayout = v.findViewById(R.id.dateLayout);
+            final LinearLayout stateLayout = v.findViewById(R.id.stateLayout);
 
             etFilterStartDate.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -1119,9 +1111,9 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if(nameCheckbox.isChecked()){
-                        etFilterName.setEnabled(true);
+                        nameLayout.setVisibility(View.VISIBLE);
                     } else {
-                        etFilterName.setEnabled(false);
+                        nameLayout.setVisibility(View.GONE);
                     }
                 }
             });
@@ -1130,13 +1122,9 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if(localCheckbox.isChecked()){
-                        unityFilterSpinner.setEnabled(true);
-                        etFilterBloco.setEnabled(true);
-                        etFilterSala.setEnabled(true);
+                        localLayout.setVisibility(View.VISIBLE);
                     } else {
-                        unityFilterSpinner.setEnabled(false);
-                        etFilterBloco.setEnabled(false);
-                        etFilterSala.setEnabled(false);
+                        localLayout.setVisibility(View.GONE);
                     }
                 }
             });
@@ -1145,11 +1133,9 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if(dateCheckbox.isChecked()){
-                        etFilterStartDate.setEnabled(true);
-                        etFilterEndDate.setEnabled(true);
+                        dateLayout.setVisibility(View.VISIBLE);
                     } else {
-                        etFilterStartDate.setEnabled(false);
-                        etFilterEndDate.setEnabled(false);
+                        dateLayout.setVisibility(View.GONE);
                     }
                 }
             });
@@ -1158,15 +1144,15 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if(stateCheckbox.isChecked()){
-                        stateFilterSpinner.setEnabled(true);
+                        stateLayout.setVisibility(View.VISIBLE);
                     } else {
-                        stateFilterSpinner.setEnabled(false);
+                        stateLayout.setVisibility(View.GONE);
                     }
                 }
             });
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Pesquisar objetos");
+            builder.setTitle("Filtrar objetos por");
             builder.setPositiveButton("OK", null);
             builder.setNegativeButton("CANCELAR", null);
             builder.setView(v);
@@ -1181,7 +1167,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                         public void onClick(View view) {
                             if(!nameCheckbox.isChecked() && !localCheckbox.isChecked() && !dateCheckbox.isChecked() && !stateCheckbox.isChecked()){
                                 AlertDialog.Builder builder1 = new AlertDialog.Builder(ListObjActivity.this);
-                                builder1.setMessage("Selecione pelo menos uma opção de pesquisa");
+                                builder1.setMessage("Selecione pelo menos uma opção de filtro");
                                 builder1.setPositiveButton("OK", null);
                                 AlertDialog dialog = builder1.create();
                                 dialog.show();

@@ -170,6 +170,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         final Intent showObject = new Intent(this,VisualizarObjActivity.class);
         final Intent objNotFound = new Intent(this,ObjNotFoundActivity.class);
+        final Intent showDeletedObject = new Intent(this, DeletedObjActivity.class);
         showObject.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode,resultCode,data);
         if(intentResult != null){
@@ -184,6 +185,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                         bundle.putString("codigo", item.getCodigo());
                         bundle.putString("foto", item.getFoto());
                         showObject.putExtras(bundle);
+                        showDeletedObject.putExtras(bundle);
                         Log.e("teste","nao é null");
                         Call<ResponseBody> imgCall = new RetrofitConfig().getObjImgRequestForComumUser().getObjImg(item.getFoto());
                         imgCall.enqueue(new Callback<ResponseBody>() {
@@ -193,7 +195,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                                     try {
                                         item.setImg(response.body().bytes());
                                         ItemSingleton.getInstance().setItemSingleton(item);
-                                        startActivity(showObject);
+                                        if(item.getEstado().equals("Excluido")){
+                                            startActivity(showDeletedObject);
+                                        } else {
+                                            startActivity(showObject);
+                                        }
                                         progressDialog.dismiss();
                                     } catch (IOException e) {
                                         e.printStackTrace();
@@ -207,7 +213,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                                                 try {
                                                     item.setImg(response.body().bytes());
                                                     ItemSingleton.getInstance().setItemSingleton(item);
-                                                    startActivity(showObject);
+                                                    if(item.getEstado().equals("Excluido")){
+                                                        startActivity(showDeletedObject);
+                                                    } else {
+                                                        startActivity(showObject);
+                                                    }
                                                     progressDialog.dismiss();
                                                 } catch (IOException e) {
                                                     e.printStackTrace();

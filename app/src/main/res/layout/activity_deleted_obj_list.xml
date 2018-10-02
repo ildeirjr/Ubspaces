@@ -27,6 +27,6 @@ android:id="@+id/coordinator_layout">
     android:src="@drawable/ic_calendar"
     android:tint="@color/white"
     app:fabSize="normal"
-    android:onClick="filterDate"/>
+    android:onClick="filter"/>
 
 </android.support.design.widget.CoordinatorLayout>

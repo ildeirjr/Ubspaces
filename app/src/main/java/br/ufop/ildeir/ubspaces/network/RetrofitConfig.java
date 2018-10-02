@@ -1,7 +1,5 @@
 package br.ufop.ildeir.ubspaces.network;
 
-import android.util.Log;
-
 import java.io.IOException;
 
 import br.ufop.ildeir.ubspaces.network.requests.get.GetFilteredObjRequest;
@@ -16,7 +14,7 @@ import br.ufop.ildeir.ubspaces.network.requests.get.GetObjListRequest;
 import br.ufop.ildeir.ubspaces.network.requests.get.GetObjThumbRequest;
 import br.ufop.ildeir.ubspaces.network.requests.get.GetUserRequest;
 import br.ufop.ildeir.ubspaces.network.requests.get.SearchByDateRequest;
-import br.ufop.ildeir.ubspaces.network.requests.get.SearchByNameRequest;
+import br.ufop.ildeir.ubspaces.network.requests.get.SearchByIdRequest;
 import br.ufop.ildeir.ubspaces.network.requests.post.EditObjDataRequest;
 import br.ufop.ildeir.ubspaces.network.requests.post.LoginRequest;
 import br.ufop.ildeir.ubspaces.network.requests.post.PostObjDataRequest;
@@ -125,8 +123,8 @@ public class RetrofitConfig {
         return this.retrofit.create(SearchByDateRequest.class);
     }
 
-    public SearchByNameRequest searchByNameRequest(){
-        return this.retrofit.create(SearchByNameRequest.class);
+    public SearchByIdRequest searchByIdRequest(){
+        return this.retrofit.create(SearchByIdRequest.class);
     }
 
     /** POST REQUESTS **/

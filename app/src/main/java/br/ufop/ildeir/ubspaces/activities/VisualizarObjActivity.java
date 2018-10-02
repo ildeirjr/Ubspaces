@@ -45,6 +45,9 @@ public class VisualizarObjActivity extends AppCompatActivity {
     private ImageView foto;
     private Bitmap img;
 
+    private MenuItem deleteItem;
+    private MenuItem editItem;
+
     private ProgressDialog progressDialog;
     private ProgressBar progressBar;
     private ScrollView scrollView;
@@ -146,7 +149,8 @@ public class VisualizarObjActivity extends AppCompatActivity {
                             }
                             progressBar.setVisibility(View.GONE);
                             scrollView.setVisibility(View.VISIBLE);
-
+                            deleteItem.setVisible(true);
+                            editItem.setVisible(true);
                         } else {
                             Call<ResponseBody> imgCall = new RetrofitConfig().getObjImgRequest().getObjImg("default.jpg");
                             imgCall.enqueue(new Callback<ResponseBody>() {
@@ -176,6 +180,8 @@ public class VisualizarObjActivity extends AppCompatActivity {
                                     }
                                     progressBar.setVisibility(View.GONE);
                                     scrollView.setVisibility(View.VISIBLE);
+                                    deleteItem.setVisible(true);
+                                    editItem.setVisible(true);
                                 }
 
                                 @Override
@@ -204,6 +210,10 @@ public class VisualizarObjActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_visualizar_obj,menu);
+        deleteItem = menu.findItem(R.id.btnDelete);
+        editItem = menu.findItem(R.id.btnEdit);
+        deleteItem.setVisible(false);
+        editItem.setVisible(false);
         return true;
     }
 
