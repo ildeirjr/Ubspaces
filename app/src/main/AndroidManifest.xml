@@ -2,10 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="br.ufop.ildeir.ubspaces">
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!--<uses-permission android:name="android.permission.CAMERA" />-->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -34,10 +41,12 @@
             android:parentActivityName=".activities.HomeActivity" />
         <activity
             android:name=".activities.CadastrarObjActivity"
-            android:parentActivityName=".activities.HomeActivity" />
+            android:parentActivityName=".activities.HomeActivity"
+            android:configChanges="keyboard|orientation|screenSize"/>
         <activity
             android:name=".activities.EditarObjActivity"
-            android:parentActivityName=".activities.VisualizarObjActivity" />
+            android:parentActivityName=".activities.VisualizarObjActivity"
+            android:configChanges="keyboard|orientation|screenSize"/>
         <activity android:name=".activities.ObjNotFoundActivity" />
         <activity android:name=".activities.ScanActivity" />
         <activity android:name=".activities.ListObjActivity">
@@ -49,6 +58,18 @@
         <activity android:name=".activities.DeletedObjListActivity" />
         <activity android:name=".activities.AboutActivity" />
         <activity android:name=".activities.DeletedObjActivity"></activity>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="br.ufop.ildeir.ubspaces.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths">
+            </meta-data>
+        </provider>
+
     </application>
 
 </manifest>

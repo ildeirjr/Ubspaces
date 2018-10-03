@@ -74,6 +74,7 @@ public class SplashActivity extends AppCompatActivity {
                         @Override
                         public void onFailure(Call<JsonObject> call, Throwable t) {
                             Toast.makeText(SplashActivity.this, "Usuário não encontrado", Toast.LENGTH_SHORT).show();
+                            finish();
                         }
                     });
 //                    try {
