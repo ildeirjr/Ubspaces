@@ -144,28 +144,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    public void scan(View view) {
-        try {
-            String user = new GetUserRequest(SessionManager.getInstance().getUserId()).execute().get();
-            if(user.equals("401")){
-                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
-                SessionManager.getInstance().toLoginActivity();
-                finish();
-            } else {
-                intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
-                intentIntegrator.setBeepEnabled(false);
-                intentIntegrator.setCaptureActivity(ScanActivity.class);
-                intentIntegrator.initiateScan();
-//                Intent it = new Intent(this, ScanActivity.class);
-//                startActivityForResult(it, SCAN_REQUEST_CODE);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         final Intent showObject = new Intent(this,VisualizarObjActivity.class);
@@ -302,17 +280,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         switch (id){
-            case R.id.cadastrar:
-                cadastra();
-                break;
-            case R.id.listar:
-                lista();
-                break;
             case R.id.sair:
                 logOut();
-                break;
-            case R.id.listarExcluidos:
-                listaExcluidos();
                 break;
             case R.id.sobre:
                 exibeSobre();
@@ -324,5 +293,39 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawerLayout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public void cadastrarObjeto(View view) {
+        cadastra();
+    }
+
+    public void listarObjetos(View view) {
+        lista();
+    }
+
+    public void objetosExcluidos(View view) {
+        listaExcluidos();
+    }
+
+    public void escanearCodigo(View view) {
+        try {
+            String user = new GetUserRequest(SessionManager.getInstance().getUserId()).execute().get();
+            if(user.equals("401")){
+                Toast.makeText(this, R.string.invalid_operator, Toast.LENGTH_SHORT).show();
+                SessionManager.getInstance().toLoginActivity();
+                finish();
+            } else {
+                intentIntegrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
+                intentIntegrator.setBeepEnabled(false);
+                intentIntegrator.setCaptureActivity(ScanActivity.class);
+                intentIntegrator.initiateScan();
+//                Intent it = new Intent(this, ScanActivity.class);
+//                startActivityForResult(it, SCAN_REQUEST_CODE);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 }

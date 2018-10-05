@@ -118,53 +118,70 @@
             <!--android:text="Ubspaces"-->
             <!--android:textSize="40dp" />-->
 
-        <android.support.design.widget.FloatingActionButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_gravity="bottom|end"
-            android:src="@drawable/ic_qr_scan"
-            android:tint="@color/white"
-            app:fabSize="normal"
-            android:onClick="scan" />
-
-        <!--<com.getbase.floatingactionbutton.FloatingActionsMenu-->
+        <!--<android.support.design.widget.FloatingActionButton-->
             <!--android:layout_width="wrap_content"-->
             <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginBottom="16dp"-->
+            <!--android:layout_marginEnd="16dp"-->
+            <!--android:layout_marginStart="16dp"-->
+            <!--android:layout_marginTop="16dp"-->
             <!--android:layout_gravity="bottom|end"-->
-            <!--app:fab_labelsPosition="left"-->
-            <!--app:fab_labelStyle="@style/menu_labels_style"-->
-            <!--app:fab_addButtonColorNormal="@color/colorAccent"-->
-            <!--app:fab_addButtonColorPressed="@color/colorAccentDark">-->
+            <!--android:src="@drawable/ic_qr_scan"-->
+            <!--android:tint="@color/white"-->
+            <!--app:fabSize="normal"-->
+            <!--android:onClick="scan" />-->
 
-            <!--<com.getbase.floatingactionbutton.FloatingActionButton-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--app:fab_colorNormal="@color/colorPrimary"-->
-                <!--app:fab_colorPressed="@color/colorPrimaryDark"-->
-                <!--app:fab_size="mini"-->
-                <!--app:fab_title="Teste"/>-->
+        <com.getbase.floatingactionbutton.FloatingActionsMenu
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginRight="2dp"
+            app:fab_labelsPosition="left"
+            app:fab_labelStyle="@style/menu_labels_style"
+            app:fab_addButtonColorNormal="@color/colorAccent"
+            app:fab_addButtonColorPressed="@color/colorAccentDark">
 
-            <!--<com.getbase.floatingactionbutton.FloatingActionButton-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--app:fab_colorNormal="@color/colorPrimary"-->
-                <!--app:fab_colorPressed="@color/colorPrimaryDark"-->
-                <!--app:fab_size="mini"-->
-                <!--app:fab_title="Teste"/>-->
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:fab_colorNormal="@color/colorPrimary"
+                app:fab_colorPressed="@color/colorPrimaryDark"
+                app:fab_size="mini"
+                app:fab_title="Cadastrar objeto"
+                android:src="@drawable/ic_add"
+                android:onClick="cadastrarObjeto"/>
 
-            <!--<com.getbase.floatingactionbutton.FloatingActionButton-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--app:fab_colorNormal="@color/colorPrimary"-->
-                <!--app:fab_colorPressed="@color/colorPrimaryDark"-->
-                <!--app:fab_size="mini"-->
-                <!--app:fab_title="Teste"/>-->
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:fab_colorNormal="@color/colorPrimary"
+                app:fab_colorPressed="@color/colorPrimaryDark"
+                app:fab_size="mini"
+                app:fab_title="Listar objetos"
+                android:src="@drawable/ic_list"
+                android:onClick="listarObjetos"/>
 
-        <!--</com.getbase.floatingactionbutton.FloatingActionsMenu>-->
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:fab_colorNormal="@color/colorPrimary"
+                app:fab_colorPressed="@color/colorPrimaryDark"
+                app:fab_size="mini"
+                app:fab_title="Objetos excluídos"
+                android:src="@drawable/ic_delete"
+                android:onClick="objetosExcluidos"/>
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:fab_colorNormal="@color/colorPrimary"
+                app:fab_colorPressed="@color/colorPrimaryDark"
+                app:fab_size="mini"
+                app:fab_title="Escanear código"
+                android:src="@drawable/ic_qr_scan"
+                android:onClick="escanearCodigo"/>
+
+        </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
     </android.support.design.widget.CoordinatorLayout>
 

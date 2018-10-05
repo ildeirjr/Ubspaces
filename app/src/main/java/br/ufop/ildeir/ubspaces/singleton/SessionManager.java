@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import com.google.zxing.integration.android.IntentIntegrator;
 
 import br.ufop.ildeir.ubspaces.activities.LoginActivity;
+import br.ufop.ildeir.ubspaces.activities.LogoutActivity;
 
 /**
  * Created by Ildeir on 31/05/2018.
@@ -72,6 +73,15 @@ public class SessionManager {
         editor.clear();
         editor.commit();
         Intent intent = new Intent(context, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
+    }
+
+    public void onLoginError(){
+        editor.clear();
+        editor.commit();
+        Intent intent = new Intent(context, LogoutActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);

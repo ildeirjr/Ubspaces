@@ -181,19 +181,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             if(response.body() != null){
                                     itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
-                            } else {
-                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
-                                call.enqueue(new Callback<ResponseBody>() {
-                                    @Override
-                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                            itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                                    }
-                                });
+                                    recyclerListAdapter.notifyDataSetChanged();
                             }
                         }
 
@@ -246,20 +234,8 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                         @Override
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             if(response.body() != null){
-                                    itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
-                            } else {
-                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
-                                call.enqueue(new Callback<ResponseBody>() {
-                                    @Override
-                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                            itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                                    }
-                                });
+                                itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
+                                recyclerListAdapter.notifyDataSetChanged();
                             }
                         }
 
@@ -536,19 +512,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             if (response.body() != null) {
                                 itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
-                            } else {
-                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
-                                call.enqueue(new Callback<ResponseBody>() {
-                                    @Override
-                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                        itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                                    }
-                                });
+                                recyclerListAdapter.notifyDataSetChanged();
                             }
                         }
 
@@ -597,19 +561,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             if(response.body() != null){
                                 itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
-                            } else {
-                                call = new RetrofitConfig().getObjThumbRequest().getObjThumb("default.jpg");
-                                call.enqueue(new Callback<ResponseBody>() {
-                                    @Override
-                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                        itemsList.get(finalI).setImg(BitmapFactory.decodeStream(response.body().byteStream()));
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                                    }
-                                });
+                                recyclerListAdapter.notifyDataSetChanged();
                             }
                         }
 
@@ -1075,6 +1027,9 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
             final LinearLayout dateLayout = v.findViewById(R.id.dateLayout);
             final LinearLayout stateLayout = v.findViewById(R.id.stateLayout);
 
+            etFilterStartDate.setText(dateFormat.format(calendarStart.getTime()));
+            etFilterEndDate.setText(dateFormat.format(calendarEnd.getTime()));
+
             etFilterStartDate.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -1329,7 +1284,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
         fabDate.setImageResource(R.drawable.ic_filter);
         fabDate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
         isFabSeted = false;
-        searchItem.setVisible(true);
+        fabDate.setVisibility(View.GONE);
         loadData();
     }
 

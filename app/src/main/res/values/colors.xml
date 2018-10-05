@@ -24,4 +24,7 @@
     <color name="bg_circle_default">#666666</color>
     <color name="dark_red">#df0000</color>
     <color name="black_semi_transparent">#B2000000</color>
+    <color name="fabOptionsNormal">#EEEEEE</color>
+    <color name="fabOptionsPressed">#d6d6d6</color>
+    <color name="fabOptionsIcon">#6e6e6e</color>
 </resources>

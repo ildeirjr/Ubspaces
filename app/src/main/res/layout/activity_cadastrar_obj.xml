@@ -48,7 +48,7 @@
                     <ImageButton
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_qr_scan"
+                        android:src="@drawable/ic_qr_scan_black"
                         android:layout_weight="5"
                         android:background="@color/zxing_transparent"
                         android:layout_gravity="center"

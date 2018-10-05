@@ -64,7 +64,7 @@ public class RetrofitConfig {
                 Response response = chain.proceed(request);
 
                 if(response.code() == 401){
-                    SessionManager.getInstance().logoutUser();
+                    SessionManager.getInstance().onLoginError();
                     response.close();
                 }
 

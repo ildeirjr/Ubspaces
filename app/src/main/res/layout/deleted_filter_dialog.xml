@@ -89,19 +89,51 @@
                 android:layout_weight="1"
                 android:visibility="gone">
 
-                <EditText
-                    android:id="@+id/etFilterStartDate"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Data inicial"
-                    android:focusable="false" />
+                    android:orientation="horizontal">
 
-                <EditText
-                    android:id="@+id/etFilterEndDate"
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="De"
+                        android:layout_weight="5"
+                        android:gravity="end"
+                        android:layout_marginRight="10dp"/>
+
+                    <EditText
+                        android:id="@+id/etFilterStartDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Data inicial"
+                        android:focusable="false"
+                        android:layout_weight="1" />
+
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Data final"
-                    android:focusable="false" />
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Até"
+                        android:layout_weight="5"
+                        android:gravity="end"
+                        android:layout_marginRight="10dp"/>
+
+                    <EditText
+                        android:id="@+id/etFilterEndDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Data final"
+                        android:focusable="false"
+                        android:layout_weight="1"/>
+
+                </LinearLayout>
 
             </LinearLayout>
 
