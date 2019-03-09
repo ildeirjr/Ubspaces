@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import br.ufop.ildeir.ubspaces.network.requests.get.GetFilteredObjRequest;
 import br.ufop.ildeir.ubspaces.network.requests.post.ClearUserTokenRequest;
-import br.ufop.ildeir.ubspaces.network.requests.delete.DeleteObjRequest;
+import br.ufop.ildeir.ubspaces.network.requests.post.DeleteObjRequest;
 import br.ufop.ildeir.ubspaces.network.requests.get.GetMetadataRequest;
 import br.ufop.ildeir.ubspaces.network.requests.get.GetObjDataRequest;
 import br.ufop.ildeir.ubspaces.network.requests.get.GetObjDataRequestForComumUser;
@@ -133,6 +133,10 @@ public class RetrofitConfig {
         return this.retrofit.create(ClearUserTokenRequest.class);
     }
 
+    public DeleteObjRequest deleteObjRequest(){
+        return this.retrofit.create(DeleteObjRequest.class);
+    }
+
     public EditObjDataRequest editObjDataRequest(){
         return this.retrofit.create(EditObjDataRequest.class);
     }
@@ -155,9 +159,7 @@ public class RetrofitConfig {
 
     /** DELETE REQUESTS **/
 
-    public DeleteObjRequest deleteObjRequest(){
-        return this.retrofit.create(DeleteObjRequest.class);
-    }
+
 
 
 
