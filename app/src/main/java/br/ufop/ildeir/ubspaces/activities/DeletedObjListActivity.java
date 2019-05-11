@@ -593,7 +593,7 @@ public class DeletedObjListActivity extends AppCompatActivity implements Deleted
         final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setOnQueryTextListener(this);
         searchView.setInputType(InputType.TYPE_CLASS_NUMBER);
-        searchView.setQueryHint("Pesquisar por código");
+        searchView.setQueryHint("Pesquisar por tombamento");
         searchItem.setVisible(false);
 
         searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {

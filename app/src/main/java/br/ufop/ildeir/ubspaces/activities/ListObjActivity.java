@@ -108,7 +108,23 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
     private Spinner unityFilterSpinner;
     private Spinner stateFilterSpinner;
 
-    private static String[] STATE_SPINNER_OPTIONS = {"Normal","Quebrado","Consertado"};
+    private static String[] STATE_SPINNER_OPTIONS = {"Alocado",
+            "Cedido em comodato",
+            "Cedido em doacao",
+            "Cessao de uso",
+            "Em deposito p/ baixa",
+            "Em deposito p/ redistribuicao",
+            "Em manutencao",
+            "Emprestado",
+            "Nao incorporado",
+            "Nao localizado",
+            "Ocioso",
+            "Permuta",
+            "Reavaliacao",
+            "Recebido em comodato",
+            "Recebido em doacao",
+            "Sinistrado",
+            "Sucateado"};
     private static String[] UNIT_SPINNER_OPTIONS = {"Centro de Educação Aberta e a Distância (CEAD)",
             "Centro Desportivo da UFOP (CEDUFOP)",
             "Escola de Direito, Turismo e Museologia (EDTM)",
@@ -598,7 +614,7 @@ public class ListObjActivity extends AppCompatActivity implements RecyclerItemTo
         final SearchView searchView = (SearchView) searchItem.getActionView();
         searchView.setOnQueryTextListener(this);
         searchView.setInputType(InputType.TYPE_CLASS_NUMBER);
-        searchView.setQueryHint("Pesquisar por código");
+        searchView.setQueryHint("Pesquisar por tombamento");
         searchItem.setVisible(false);
 
         searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {

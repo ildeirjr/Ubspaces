@@ -31,6 +31,8 @@ public class Item {
     private String descricao;
     private String unidade;
     private String foto;
+    private String empenho;
+    private String conservacao;
 
     @SerializedName("op_exclusao_id")
     private String nomeUsrExclusao;
@@ -131,6 +133,22 @@ public class Item {
         this.foto = foto;
     }
 
+    public String getEmpenho() {
+        return empenho;
+    }
+
+    public void setEmpenho(String empenho) {
+        this.empenho = empenho;
+    }
+
+    public String getConservacao() {
+        return conservacao;
+    }
+
+    public void setConservacao(String conservacao) {
+        this.conservacao = conservacao;
+    }
+
     public String getNomeUsrExclusao() {
         return nomeUsrExclusao;
     }
@@ -168,6 +186,8 @@ public class Item {
             setDescricao(jsonItem.getString("descricao"));
             setUnidade(jsonItem.getString("unidade"));
             setFoto(jsonItem.getString("foto"));
+            setEmpenho(jsonItem.getString("empenho"));
+            setConservacao(jsonItem.getString("conservacao"));
             setNomeUsrExclusao(jsonItem.getString("op_exclusao_id"));
             setDataExclusao(jsonItem.getString("tempo_exclusao"));
         } catch (JSONException e) {
@@ -189,6 +209,8 @@ public class Item {
             jsonItem.put("descricao",getDescricao());
             jsonItem.put("unidade",getUnidade());
             jsonItem.put("foto",getFoto());
+            jsonItem.put("empenho",getEmpenho());
+            jsonItem.put("conservacao",getConservacao());
             jsonItem.put("op_exclusao_id",getNomeUsrExclusao());
             jsonItem.put("tempo_exclusao",getDataExclusao());
             return jsonItem;
@@ -224,6 +246,9 @@ public class Item {
             return false;
         if (unidade != null ? !unidade.equals(item.unidade) : item.unidade != null) return false;
         if (foto != null ? !foto.equals(item.foto) : item.foto != null) return false;
+        if (empenho != null ? !empenho.equals(item.empenho) : item.empenho != null) return false;
+        if (conservacao != null ? !conservacao.equals(item.conservacao) : item.conservacao != null)
+            return false;
         if (nomeUsrExclusao != null ? !nomeUsrExclusao.equals(item.nomeUsrExclusao) : item.nomeUsrExclusao != null)
             return false;
         if (dataExclusao != null ? !dataExclusao.equals(item.dataExclusao) : item.dataExclusao != null)
@@ -244,6 +269,8 @@ public class Item {
         result = 31 * result + (descricao != null ? descricao.hashCode() : 0);
         result = 31 * result + (unidade != null ? unidade.hashCode() : 0);
         result = 31 * result + (foto != null ? foto.hashCode() : 0);
+        result = 31 * result + (empenho != null ? empenho.hashCode() : 0);
+        result = 31 * result + (conservacao != null ? conservacao.hashCode() : 0);
         result = 31 * result + (nomeUsrExclusao != null ? nomeUsrExclusao.hashCode() : 0);
         result = 31 * result + (dataExclusao != null ? dataExclusao.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(img);

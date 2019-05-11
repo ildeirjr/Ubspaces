@@ -72,12 +72,29 @@ public class EditarObjActivity extends AppCompatActivity {
     private TextInputLayout etData;
     private TextInputLayout etRecebedor;
     private TextInputLayout etNota;
+    private TextInputLayout etEmpenho;
     private ImageView fotoView;
-    private Spinner stateSpinner, unitSpinner;
+    private Spinner stateSpinner, unitSpinner, conservationSpinner;
     private Calendar calendar;
     private static int IMG_GALLERY = 1;
     private static int IMG_CAMERA = 2;
-    private static String[] STATE_SPINNER_OPTIONS = {"Normal","Quebrado","Consertado"};
+    private static String[] STATE_SPINNER_OPTIONS = {"Alocado",
+                                                    "Cedido em comodato",
+                                                    "Cedido em doacao",
+                                                    "Cessao de uso",
+                                                    "Em deposito p/ baixa",
+                                                    "Em deposito p/ redistribuicao",
+                                                    "Em manutencao",
+                                                    "Emprestado",
+                                                    "Nao incorporado",
+                                                    "Nao localizado",
+                                                    "Ocioso",
+                                                    "Permuta",
+                                                    "Reavaliacao",
+                                                    "Recebido em comodato",
+                                                    "Recebido em doacao",
+                                                    "Sinistrado",
+                                                    "Sucateado"};
     private static String[] UNIT_SPINNER_OPTIONS = {"Centro de Educação Aberta e a Distância (CEAD)",
             "Centro Desportivo da UFOP (CEDUFOP)",
             "Escola de Direito, Turismo e Museologia (EDTM)",
@@ -90,6 +107,17 @@ public class EditarObjActivity extends AppCompatActivity {
             "Instituto de Ciências Humanas e Sociais (ICHS)",
             "Instituto de Ciências Sociais Aplicadas (ICSA)",
             "Instituto de Filosofia, Arte e Cultura (IFAC)"};
+    private static String[] CONSERVATION_SPINNER_OPTIONS = {"Alienado",
+            "Antieconomico",
+            "Bom",
+            "Doado",
+            "Irrecuperavel",
+            "Obsoleto",
+            "Outros",
+            "Peca de museu",
+            "Precario",
+            "Recuperavel",
+            "Sucateado"};
 
     Bitmap img;
     private boolean flagDateDialogOpened = false;
@@ -121,15 +149,20 @@ public class EditarObjActivity extends AppCompatActivity {
         etData = findViewById(R.id.layoutData);
         etRecebedor = findViewById(R.id.layoutRecebedor);
         etNota = findViewById(R.id.layoutNota);
+        etEmpenho = findViewById(R.id.layoutEmpenho);
         fotoView = findViewById(R.id.addImg);
         stateSpinner = findViewById(R.id.stateSpinner);
         unitSpinner = findViewById(R.id.unitSpinner);
+        conservationSpinner = findViewById(R.id.conservationSpinner);
 
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, STATE_SPINNER_OPTIONS);
         stateSpinner.setAdapter(spinnerAdapter);
 
         spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, UNIT_SPINNER_OPTIONS);
         unitSpinner.setAdapter(spinnerAdapter);
+
+        spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, CONSERVATION_SPINNER_OPTIONS);
+        conservationSpinner.setAdapter(spinnerAdapter);
 
         etData.getEditText().setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -182,6 +215,7 @@ public class EditarObjActivity extends AppCompatActivity {
             etData.getEditText().setText(DateHandler.toStringDate(calendar.getTime()));
             etRecebedor.getEditText().setText(itemSingleton.getRecebeu());
             etNota.getEditText().setText(itemSingleton.getNota());
+            etEmpenho.getEditText().setText(itemSingleton.getEmpenho());
             img = BitmapFactory.decodeByteArray(itemSingleton.getImg(),0,itemSingleton.getImg().length);
             fotoView.setImageBitmap(img);
             codigoAntigo = itemSingleton.getCodigo();
@@ -190,6 +224,13 @@ public class EditarObjActivity extends AppCompatActivity {
             for(int i=0 ; i<STATE_SPINNER_OPTIONS.length ; i++){
                 if(itemSingleton.getEstado().equals(STATE_SPINNER_OPTIONS[i])){
                     stateSpinner.setSelection(i);
+                    break;
+                }
+            }
+
+            for(int i=0 ; i<CONSERVATION_SPINNER_OPTIONS.length ; i++){
+                if(itemSingleton.getConservacao().equals(CONSERVATION_SPINNER_OPTIONS[i])){
+                    conservationSpinner.setSelection(i);
                     break;
                 }
             }
@@ -258,6 +299,7 @@ public class EditarObjActivity extends AppCompatActivity {
                         !validarCampo(etSala)|
                         !validarCampo(etData)|
                         !validarCampo(etNota)|
+                        !validarCampo(etEmpenho)|
                         !validarCampo(etRecebedor)){
                     return true;
                 }else {
@@ -287,7 +329,9 @@ public class EditarObjActivity extends AppCompatActivity {
                 itemSingleton.setDataEntrada(sqlDate);
                 itemSingleton.setRecebeu(etRecebedor.getEditText().getText().toString());
                 itemSingleton.setNota(etNota.getEditText().getText().toString());
+                itemSingleton.setEmpenho(etEmpenho.getEditText().getText().toString());
                 itemSingleton.setUnidade(unitSpinner.getSelectedItem().toString());
+                itemSingleton.setConservacao(conservationSpinner.getSelectedItem().toString());
                 if(!itemSingleton.getFoto().equals("null.jpg")){
                     itemSingleton.setFoto(etNome.getEditText().getText().toString().replaceAll(" ", "_") + "_" + etCodigo.getEditText().getText().toString() + ".jpg");
                     try {

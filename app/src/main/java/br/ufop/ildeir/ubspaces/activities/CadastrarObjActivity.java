@@ -71,13 +71,30 @@ public class CadastrarObjActivity extends AppCompatActivity {
     private TextInputLayout etData;
     private TextInputLayout etRecebedor;
     private TextInputLayout etNota;
+    private TextInputLayout etEmpenho;
     private ImageView fotoView;
     private ArrayAdapter<String> spinnerAdapter;
-    private Spinner stateSpinner, unitSpinner;
+    private Spinner stateSpinner, unitSpinner, conservationSpinner;
     private Calendar calendar;
     private static int IMG_GALLERY = 1;
     private static int IMG_CAMERA = 2;
-    private static String[] STATE_SPINNER_OPTIONS = {"Normal","Quebrado","Consertado"};
+    private static String[] STATE_SPINNER_OPTIONS = {"Alocado",
+                                                     "Cedido em comodato",
+                                                     "Cedido em doacao",
+                                                     "Cessao de uso",
+                                                     "Em deposito p/ baixa",
+                                                     "Em deposito p/ redistribuicao",
+                                                     "Em manutencao",
+                                                     "Emprestado",
+                                                     "Nao incorporado",
+                                                     "Nao localizado",
+                                                     "Ocioso",
+                                                     "Permuta",
+                                                     "Reavaliacao",
+                                                     "Recebido em comodato",
+                                                     "Recebido em doacao",
+                                                     "Sinistrado",
+                                                     "Sucateado"};
     private static String[] UNIT_SPINNER_OPTIONS = {"Centro de Educação Aberta e a Distância (CEAD)",
                                                     "Centro Desportivo da UFOP (CEDUFOP)",
                                                     "Escola de Direito, Turismo e Museologia (EDTM)",
@@ -90,6 +107,17 @@ public class CadastrarObjActivity extends AppCompatActivity {
                                                     "Instituto de Ciências Humanas e Sociais (ICHS)",
                                                     "Instituto de Ciências Sociais Aplicadas (ICSA)",
                                                     "Instituto de Filosofia, Arte e Cultura (IFAC)"};
+    private static String[] CONSERVATION_SPINNER_OPTIONS = {"Alienado",
+                                                            "Antieconomico",
+                                                            "Bom",
+                                                            "Doado",
+                                                            "Irrecuperavel",
+                                                            "Obsoleto",
+                                                            "Outros",
+                                                            "Peca de museu",
+                                                            "Precario",
+                                                            "Recuperavel",
+                                                            "Sucateado"};
 
     Bitmap img;
     byte[] b;
@@ -139,9 +167,11 @@ public class CadastrarObjActivity extends AppCompatActivity {
         etData = findViewById(R.id.layoutData);
         etRecebedor = findViewById(R.id.layoutRecebedor);
         etNota = findViewById(R.id.layoutNota);
+        etEmpenho = findViewById(R.id.layoutEmpenho);
         fotoView = findViewById(R.id.addImg);
         stateSpinner = findViewById(R.id.stateSpinner);
         unitSpinner = findViewById(R.id.unitSpinner);
+        conservationSpinner = findViewById(R.id.conservationSpinner);
 
         intentIntegrator = new IntentIntegrator(this);
 
@@ -169,6 +199,9 @@ public class CadastrarObjActivity extends AppCompatActivity {
         spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,UNIT_SPINNER_OPTIONS);
         unitSpinner.setAdapter(spinnerAdapter);
 
+        spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,CONSERVATION_SPINNER_OPTIONS);
+        conservationSpinner.setAdapter(spinnerAdapter);
+
         progressDialog = new ProgressDialog(this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.setMessage("Carregando");
@@ -195,6 +228,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
                    !validarCampo(etSala)|
                    !validarCampo(etData)|
                    !validarCampo(etNota)|
+                   !validarCampo(etEmpenho)|
                    !validarCampo(etRecebedor)){
                     return true;
                 }else {
@@ -218,12 +252,14 @@ public class CadastrarObjActivity extends AppCompatActivity {
                     jsonObject.put("codigo",etCodigo.getEditText().getText().toString());
                     jsonObject.put("nome",etNome.getEditText().getText().toString());
                     jsonObject.put("estado",stateSpinner.getSelectedItem().toString());
+                    jsonObject.put("conservacao",conservationSpinner.getSelectedItem().toString());
                     jsonObject.put("descricao",etDescricao.getEditText().getText().toString());
                     jsonObject.put("bloco", etBloco.getEditText().getText().toString());
                     jsonObject.put("sala",etSala.getEditText().getText().toString());
                     jsonObject.put("data_entrada",sqlDate);
                     jsonObject.put("recebeu",etRecebedor.getEditText().getText().toString());
                     jsonObject.put("nota",etNota.getEditText().getText().toString());
+                    jsonObject.put("empenho",etEmpenho.getEditText().getText().toString());
                     jsonObject.put("unidade",unitSpinner.getSelectedItem().toString());
                     jsonObject.put("nome_usuario",Integer.parseInt(SessionManager.getInstance().getUserId()));
                     Log.e("user_id",SessionManager.getInstance().getUserId());

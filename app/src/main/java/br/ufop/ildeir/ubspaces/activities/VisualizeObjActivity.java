@@ -23,12 +23,14 @@ public class VisualizeObjActivity extends AppCompatActivity {
     private TextView textNome;
     private TextView textCodigo;
     private TextView textEstado;
+    private TextView textConservacao;
     private TextView textDescricao;
     private TextView textSala;
     private TextView textData;
     private TextView textBloco;
     private TextView textRecebedor;
     private TextView textNota;
+    private TextView textEmpenho;
     private TextView textUnidade;
     private ImageView foto;
     private Bitmap img;
@@ -46,12 +48,14 @@ public class VisualizeObjActivity extends AppCompatActivity {
         textNome = findViewById(R.id.textNome);
         textCodigo = findViewById(R.id.textCodigo);
         textEstado = findViewById(R.id.textEstado);
+        textConservacao = findViewById(R.id.textConservacao);
         textDescricao = findViewById(R.id.textDescricao);
         textBloco = findViewById(R.id.textBloco);
         textSala = findViewById(R.id.textSala);
         textData = findViewById(R.id.textData);
         textRecebedor = findViewById(R.id.textRecebedor);
         textNota = findViewById(R.id.textNota);
+        textEmpenho = findViewById(R.id.textEmpenho);
         textUnidade = findViewById(R.id.textUnidade);
         foto = findViewById(R.id.imgView);
 
@@ -59,12 +63,14 @@ public class VisualizeObjActivity extends AppCompatActivity {
             textNome.setText(ItemSingleton.getInstance().getItemSingleton().getNome());
             textCodigo.setText(ItemSingleton.getInstance().getItemSingleton().getCodigo());
             textEstado.setText(ItemSingleton.getInstance().getItemSingleton().getEstado());
+            textConservacao.setText(ItemSingleton.getInstance().getItemSingleton().getConservacao());
             textDescricao.setText(ItemSingleton.getInstance().getItemSingleton().getDescricao());
             textBloco.setText(ItemSingleton.getInstance().getItemSingleton().getBloco());
             textSala.setText(ItemSingleton.getInstance().getItemSingleton().getSala());
             textData.setText(DateHandler.sqlDateToString(ItemSingleton.getInstance().getItemSingleton().getDataEntrada()));
             textRecebedor.setText(ItemSingleton.getInstance().getItemSingleton().getRecebeu());
             textNota.setText(ItemSingleton.getInstance().getItemSingleton().getNota());
+            textEmpenho.setText(ItemSingleton.getInstance().getItemSingleton().getEmpenho());
             textUnidade.setText(ItemSingleton.getInstance().getItemSingleton().getUnidade());
             img = BitmapFactory.decodeByteArray(ItemSingleton.getInstance().getItemSingleton().getImg(),0,ItemSingleton.getInstance().getItemSingleton().getImg().length);
             foto.setImageBitmap(img);

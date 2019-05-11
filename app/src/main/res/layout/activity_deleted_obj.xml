@@ -66,7 +66,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Código"
+                    android:text="Tombamento"
                     android:textColor="@color/primaryText"/>
 
                 <TextView
@@ -80,7 +80,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Estado"
+                    android:text="Situação"
                     android:textColor="@color/primaryText"/>
 
                 <TextView
@@ -94,7 +94,21 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Descrição"
+                    android:text="Conservação"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textConservacao"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Bom"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Especificação"
                     android:textColor="@color/primaryText"/>
 
                 <TextView
@@ -108,7 +122,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Data de entrada"
+                    android:text="Data de compra"
                     android:textColor="@color/primaryText"/>
 
                 <TextView
@@ -164,7 +178,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Recebedor"
+                    android:text="Responsável"
                     android:textColor="@color/primaryText"/>
 
                 <TextView
@@ -178,11 +192,25 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Nota Fiscal"
+                    android:text="Processo compra"
                     android:textColor="@color/primaryText"/>
 
                 <TextView
                     android:id="@+id/textNota"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="100029100"
+                    android:textColor="@color/secondaryText"
+                    android:paddingBottom="@dimen/paddingBottom"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Empenho"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/textEmpenho"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="100029100"
@@ -215,6 +243,8 @@
                     android:layout_height="wrap_content"
                     android:text="01/10/2018 - 10:12"
                     android:textColor="@color/secondaryText" />
+
+
 
             </LinearLayout>
 

@@ -20,7 +20,7 @@
                 android:id="@+id/nameCheckbox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Nome"/>
+                android:text="Descrição do bem"/>
 
             <LinearLayout
                 android:id="@+id/nameLayout"
@@ -78,7 +78,7 @@
                 android:id="@+id/dateCheckbox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Data de entrada"
+                android:text="Data de compra"
                 android:layout_weight="1"/>
 
             <LinearLayout
