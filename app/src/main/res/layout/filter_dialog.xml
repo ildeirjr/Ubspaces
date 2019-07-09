@@ -88,7 +88,7 @@
                 android:id="@+id/dateCheckbox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Data de compra"
+                android:text="Data de compra/cadastro"
                 android:layout_weight="1"/>
 
             <LinearLayout
