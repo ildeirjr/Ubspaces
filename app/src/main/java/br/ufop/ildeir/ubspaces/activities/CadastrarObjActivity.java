@@ -201,6 +201,7 @@ public class CadastrarObjActivity extends AppCompatActivity {
 
         spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,CONSERVATION_SPINNER_OPTIONS);
         conservationSpinner.setAdapter(spinnerAdapter);
+        conservationSpinner.setSelection(2);
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
